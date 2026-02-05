@@ -8,6 +8,10 @@ parser.add_argument('-o', '--output', type=str, required=True, help="Text file o
 
 args = parser.parse_args()
 
+"""
+Very simple script to write absolute path to a given file into a text file
+"""
+
 txt = path.abspath(args.input).strip()
 
 with open(args.output, "w") as writer:

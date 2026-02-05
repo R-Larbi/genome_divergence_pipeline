@@ -14,11 +14,12 @@ FINAL = ACCESSNB
 
 rule all:
     """
-    Get the distance matrix
+    Get the distance matrix and its readable counterpart
     """
 
     input:
         matrix = "results/dist.txt"
+        hr_mat = "results/hr_dist.txt"
     
 
 rule get_fna:
@@ -77,8 +78,6 @@ rule write_filelist:
         filelist=temp("data/assemblies/{accession}/filelist.txt")
     shell:
         """
-        touch data/assemblies/{wildcards.accession}/filelist.txt &&
-        chmod +wr data/assemblies/{wildcards.accession}/filelist.txt &&
         python3 scripts/3_evo_distance/python/write_filelist.py -i {input} -o {output}
         """
 
@@ -106,8 +105,6 @@ rule write_hashlist:
         hashlist="data/minhash/hashlist.txt"
     shell:
         """
-        touch data/minhash/hashlist.txt &&
-        chmod +wr data/minhash/hashlist.txt &&
         python3 scripts/3_evo_distance/python/write_hashlist.py -i data/minhash -o {output}
         """
 
@@ -122,4 +119,18 @@ rule get_matrix:
     shell:
         """
         ~/MIKE/src/mike dist -l {input} -L {input} -d results
+        """
+
+rule readable_matrix:
+    """
+    Generates a readable matrix where all accession numbers are replaced by species name
+    """
+    input:
+        matrix = "results/dist.txt",
+        info = "data/resources/organisms_data"
+    output:
+        hr_mat = "results/hr_dist.txt"
+    shell:
+        """
+        python3 -i {input.info} -d {input.matrix} -o {output}
         """

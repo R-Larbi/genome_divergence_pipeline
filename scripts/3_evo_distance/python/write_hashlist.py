@@ -8,6 +8,10 @@ parser.add_argument('-o', '--output', type=str, required=True, help="Text file o
 
 args = parser.parse_args()
 
+"""
+Very simple script to write absolute paths to a set of given files into a text file
+"""
+
 with open(args.output, "w") as writer:
     for dirpath,_,filenames in walk(args.input):
         for f in filenames:

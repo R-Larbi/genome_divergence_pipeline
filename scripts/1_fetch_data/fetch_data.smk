@@ -35,7 +35,7 @@ rule frauder_le_xml:
         "data/resources/rooted_extraction"
     shell:
         """
-        python3 scripts/fetch_data/python/xml_rewrite.py {input} {output}\
+        python3 scripts/1_fetch_data/python/xml_rewrite.py {input} {output}\
         && rm {input}
         """
 
@@ -48,4 +48,4 @@ rule data_analysis:
     output:
         "data/resources/organisms_data"
     shell:
-        "python3 scripts/fetch_data/python/xml_reader.py {input} {output}"
+        "python3 scripts/1_fetch_data/python/xml_reader.py {input} {output}"
