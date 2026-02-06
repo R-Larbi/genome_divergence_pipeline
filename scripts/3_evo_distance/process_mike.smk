@@ -12,6 +12,17 @@ with open("data/resources/organisms_data") as reader:
 
 FINAL = ACCESSNB
 
+"""
+Priority order:
+get_fna        1
+process_kmc    2
+transform_kmc  3
+write_filelist 4
+sketch         5
+
+This ensures that the temporary files are deleted before new ones are generated, saving disk space.
+"""
+
 rule all:
     """
     Get the distance matrix and its readable counterpart
@@ -26,6 +37,7 @@ rule all:
 rule get_fna:
     """
     Get the fna file as tempory file
+    Disk space usage: 1500MB
     """
     input:
         url_fna="data/assemblies/{accession}/url_genomic.fna.txt"
@@ -33,6 +45,7 @@ rule get_fna:
         file_fna=temp("data/assemblies/{accession}/genomic.fna.gz")
     resources:
         disk_mb = 1500
+    priority: 1
     shell:
         """
         cd data/assemblies/{wildcards.accession}/ \
@@ -42,6 +55,7 @@ rule get_fna:
 rule process_kmc:
     """
     Execute kmc on each genome
+    Disk space usage: 15000MB + 1500MB(fasta file) = 16500MB
     """
     input:
         fna="data/assemblies/{accession}/genomic.fna.gz"
@@ -53,7 +67,8 @@ rule process_kmc:
         min_count=config["min_count"],
         max_count=config["max_count"]
     resources:
-        disk_mb = 15000
+        disk_mb = 16500
+    priority: 2
     shell:
         """
         kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t8 -fm {input} kmc_{wildcards.accession} .
@@ -62,6 +77,7 @@ rule process_kmc:
 rule transform_kmc:
     """
     Transform the kmc files into text
+    Disk space usage: 72000MB + 15000MB(kmc files) = 87000MB
     """
     input:
         kmc_pre="kmc_{accession}.kmc_pre",
@@ -69,7 +85,8 @@ rule transform_kmc:
     output:
         kmc_fin=temp("data/assemblies/{accession}/kmc_{accession}.txt")
     resources:
-        disk_mb = 72000
+        disk_mb = 87000
+    priority: 3
     shell:
         """
         kmc_tools transform kmc_{wildcards.accession} sort . dump -s data/assemblies/{wildcards.accession}/kmc_{wildcards.accession}.txt
@@ -78,11 +95,15 @@ rule transform_kmc:
 rule write_filelist:
     """
     Write the filelist for MIKE sketching
+    Disk space usage: 72000MB(kmc txt file)
     """
     input:
         kmc_fin="data/assemblies/{accession}/kmc_{accession}.txt"
     output:
         filelist=temp("data/assemblies/{accession}/filelist.txt")
+    resources:
+        disk_mb = 72000
+    priority: 4
     shell:
         """
         python3 scripts/3_evo_distance/python/write_filelist.py -i {input} -o {output}
@@ -99,7 +120,8 @@ rule sketch:
     output:
         minhash="data/minhash/kmc_{accession}.minhash.jac"
     resources:
-        disk_mb = 16
+        disk_mb = 72000
+    priority: 5
     shell:
         """
         ~/MIKE/src/mike sketch -t 10 -l {input.filelist} -d data/minhash
