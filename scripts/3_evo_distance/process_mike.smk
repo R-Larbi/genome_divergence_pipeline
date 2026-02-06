@@ -19,8 +19,8 @@ rule all:
 
     input:
         matrix = "results/dist.txt",
-        hr_mat = "results/hr_dist.txt",
-        relat = "results/relatives_list.txt"
+        #hr_mat = "results/hr_dist.txt",
+        #relat = "results/relatives_list.txt"
     
 
 rule get_fna:
@@ -30,7 +30,9 @@ rule get_fna:
     input:
         url_fna="data/assemblies/{accession}/url_genomic.fna.txt"
     output:
-        file_fna="data/assemblies/{accession}/genomic.fna.gz"
+        file_fna=temp("data/assemblies/{accession}/genomic.fna.gz")
+    resources:
+        disk_mb = 1500
     shell:
         """
         cd data/assemblies/{wildcards.accession}/ \
@@ -50,6 +52,8 @@ rule process_kmc:
         kc=config["k"],
         min_count=config["min_count"],
         max_count=config["max_count"]
+    resources:
+        disk_mb = 15000
     shell:
         """
         kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t8 -fm {input} kmc_{wildcards.accession} .
@@ -64,6 +68,8 @@ rule transform_kmc:
         kmc_suf="kmc_{accession}.kmc_suf"
     output:
         kmc_fin=temp("data/assemblies/{accession}/kmc_{accession}.txt")
+    resources:
+        disk_mb = 72000
     shell:
         """
         kmc_tools transform kmc_{wildcards.accession} sort . dump -s data/assemblies/{wildcards.accession}/kmc_{wildcards.accession}.txt
@@ -85,12 +91,15 @@ rule write_filelist:
 rule sketch:
     """
     MIKE sketching process
+    kmc_fin is specified but never used: this is so that it isn't prematurely deleted during rule write_filelist
     """
     input:
         kmc_fin="data/assemblies/{accession}/kmc_{accession}.txt",
         filelist="data/assemblies/{accession}/filelist.txt"
     output:
         minhash="data/minhash/kmc_{accession}.minhash.jac"
+    resources:
+        disk_mb = 16
     shell:
         """
         ~/MIKE/src/mike sketch -t 10 -l {input.filelist} -d data/minhash
@@ -121,25 +130,25 @@ rule get_matrix:
         """
         ~/MIKE/src/mike dist -l {input} -L {input} -d results
         """
-
+"""
 rule readable_matrix:
-    """
-    Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
-    """
+"""
+    #Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
+"""
     input:
         matrix = "results/dist.txt",
         info = "data/resources/organisms_data"
     output:
         hr_mat = "results/hr_dist.txt"
     shell:
-        """
-        python3 -i {input.info} -d {input.matrix} -o {output}
-        """
+"""
+        #python3 -i {input.info} -d {input.matrix} -o {output}
+"""
 
 rule get_relatives:
-    """
-    Gets a list of closely related species
-    """
+"""
+    #Gets a list of closely related species
+"""
     input:
         matrix = "results/dist.txt"
     output:
@@ -147,6 +156,7 @@ rule get_relatives:
     params:
         t = config["threshold"]
     shell:
-        """
-        python3 -i {input} -o {output} -t {params.t}
-        """
+"""
+        #python3 -i {input} -o {output} -t {params.t}
+"""
+"""
