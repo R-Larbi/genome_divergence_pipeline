@@ -30,8 +30,7 @@ rule all:
 
     input:
         matrix = "results/dist.txt",
-        #hr_mat = "results/hr_dist.txt",
-        #relat = "results/relatives_list.txt"
+        hr_mat = "results/hr_dist.txt"
     
 
 rule get_fna:
@@ -152,33 +151,17 @@ rule get_matrix:
         """
         ~/MIKE/src/mike dist -l {input} -L {input} -d results
         """
-"""
+
 rule readable_matrix:
-"""
-    #Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
-"""
+    """
+    Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
+    """
     input:
         matrix = "results/dist.txt",
         info = "data/resources/organisms_data"
     output:
         hr_mat = "results/hr_dist.txt"
     shell:
-"""
-        #python3 -i {input.info} -d {input.matrix} -o {output}
-"""
-
-rule get_relatives:
-"""
-    #Gets a list of closely related species
-"""
-    input:
-        matrix = "results/dist.txt"
-    output:
-        relat = "results/relatives_list.txt"
-    params:
-        t = config["threshold"]
-    shell:
-"""
-        #python3 -i {input} -o {output} -t {params.t}
-"""
-"""
+        """
+        python3 scripts/3_evo_distance/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
+        """
