@@ -8,9 +8,9 @@ def load_json(file_path):
         return json.load(file)
 
 # Assign environment variables
-globals().update(load_json("../environment_path.json"))
+globals().update(load_json("scripts/environment_path.json"))
 
-with open("{pathResources}organisms_data") as reader:
+with open(pathResources + "organisms_data") as reader:
     """
     Creates the list of accession numbers
     """
@@ -79,7 +79,7 @@ rule process_kmc:
     priority: 2
     shell:
         """
-        {pathBin}kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t8 -fm {input} kmc_{wildcards.accession} .
+        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t8 -fm {input} kmc_{wildcards.accession} .
         """
 
 rule transform_kmc:
@@ -97,7 +97,7 @@ rule transform_kmc:
     priority: 3
     shell:
         """
-        {pathBin}kmc_tools transform kmc_{wildcards.accession} sort . dump -s {pathAssemblies}{wildcards.accession}/kmc_{wildcards.accession}.txt
+        kmc_tools transform kmc_{wildcards.accession} sort . dump -s {pathAssemblies}{wildcards.accession}/kmc_{wildcards.accession}.txt
         """
 
 rule write_filelist:
@@ -132,7 +132,7 @@ rule sketch:
     priority: 5
     shell:
         """
-        {pathBin}mike sketch -t 10 -l {input.filelist} -d data/minhash
+        mike sketch -t 10 -l {input.filelist} -d data/minhash
         """
 
 rule write_hashlist:
@@ -158,7 +158,7 @@ rule get_matrix:
         matrix = pathResults + "dist.txt"
     shell:
         """
-        {pathBin}mike dist -l {input} -L {input} -d {pathResults}
+        mike dist -l {input} -L {input} -d {pathResults}
         """
 
 rule readable_matrix:
