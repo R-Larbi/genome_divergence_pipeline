@@ -1,11 +1,21 @@
+import json
+
 configfile: "scripts/1_fetch_data/config.json"
 
+# Function to load JSON files
+def load_json(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+# Assign environment variables
+globals().update(load_json("../environment_path.json"))
+
 rule all:
-    input: "data/resources/organisms_data"
+    input: pathResources + "organisms_data"
 
 rule ncbi_query:
     output:
-        "data/resources/ncbi_extraction"
+        pathResources + "ncbi_extraction"
     params:
         query = config['query']
     shell:
@@ -30,12 +40,12 @@ rule frauder_le_xml:
     The xml_rewrite.py script creates a new xml file with only one root.
     """
     input:
-        "data/resources/ncbi_extraction"
+        pathResources + "ncbi_extraction"
     output:
-        "data/resources/rooted_extraction"
+        pathResources + "rooted_extraction"
     shell:
         """
-        python3 scripts/1_fetch_data/python/xml_rewrite.py {input} {output}\
+        python3 {pathScripts}1_fetch_data/python/xml_rewrite.py {input} {output}\
         && rm {input}
         """
 
@@ -44,8 +54,8 @@ rule data_analysis:
     Writing important data in a readable text file.
     """
     input:
-        "data/resources/rooted_extraction"
+        pathResources + "rooted_extraction"
     output:
-        "data/resources/organisms_data"
+        pathResources + "organisms_data"
     shell:
-        "python3 scripts/1_fetch_data/python/xml_reader.py {input} {output}"
+        "python3 {pathScripts}1_fetch_data/python/xml_reader.py {input} {output}"

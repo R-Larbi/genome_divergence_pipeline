@@ -1,4 +1,14 @@
-with open("data/resources/organisms_data") as reader:
+import json
+
+# Function to load JSON files
+def load_json(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+# Assign environment variables
+globals().update(load_json("../environment_path.json"))
+
+with open("{pathResources}organisms_data") as reader:
     """
     Creates the list of URL that will be used for download
     """
@@ -15,7 +25,7 @@ PATHLIST = dict(zip(FINAL, PATHLIST))
 
 rule all:
     input: 
-        expand("data/assemblies/{accession}/url_genomic.fna.txt", accession=FINAL)
+        expand(pathAssemblies + "{accession}/url_genomic.fna.txt", accession=FINAL)
 
 def GetPath(wildcards):
     return(PATHLIST[wildcards.accession])
@@ -24,12 +34,10 @@ rule download_genomic_data:
     params:
         http_path = GetPath
     input:
-        "data/resources/organisms_data"
+        pathResources + "organisms_data"
     output:
-        "data/assemblies/{accession}/url_genomic.fna.txt"
+        pathAssemblies + "{accession}/url_genomic.fna.txt"
     shell:
         """
-        cd data/assemblies/{wildcards.accession}/ \
-        && echo {params.http_path}_genomic.fna.gz > url_genomic.fna.txt\
-        && cd ../../../
+        echo {pathAssemblies}{wildcards.accession}/{params.http_path}_genomic.fna.gz > {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt
         """
