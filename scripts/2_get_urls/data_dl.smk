@@ -6,9 +6,9 @@ def load_json(file_path):
         return json.load(file)
 
 # Assign environment variables
-globals().update(load_json("../environment_path.json"))
+globals().update(load_json("scripts/environment_path.json"))
 
-with open("{pathResources}organisms_data") as reader:
+with open(pathResources + "organisms_data") as reader:
     """
     Creates the list of URL that will be used for download
     """
@@ -39,5 +39,5 @@ rule download_genomic_data:
         pathAssemblies + "{accession}/url_genomic.fna.txt"
     shell:
         """
-        echo {pathAssemblies}{wildcards.accession}/{params.http_path}_genomic.fna.gz > {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt
+        echo {params.http_path}_genomic.fna.gz > {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt
         """

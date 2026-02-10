@@ -8,7 +8,7 @@ def load_json(file_path):
         return json.load(file)
 
 # Assign environment variables
-globals().update(load_json("../environment_path.json"))
+globals().update(load_json("scripts/environment_path.json"))
 
 rule all:
     input: pathResources + "organisms_data"
