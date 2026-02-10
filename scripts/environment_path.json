@@ -1,0 +1,8 @@
+{
+    "pathAssemblies": "/beegfs/data/genome_divergence_pipeline/data/assemblies/",
+    "pathResources": "/beegfs/data/genome_divergence_pipeline/data/resources/",
+    "pathMinhash": "/beegfs/data/genome_divergence_pipeline/data/minhash/",
+    "pathScripts": "/beegfs/data/genome_divergence_pipeline/scripts/",
+    "pathResults": "/beegfs/data/genome_divergence_pipeline/results/",
+    "pathBin": "/beegfs/data/genome_divergence_pipeline/bin/"
+}
