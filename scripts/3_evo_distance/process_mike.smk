@@ -68,18 +68,19 @@ rule process_kmc:
     input:
         fna = pathAssemblies + "{accession}/genomic.fna.gz"
     output:
-        kmc_pre = temp("kmc_{accession}.kmc_pre"),
-        kmc_suf = temp("kmc_{accession}.kmc_suf")
+        kmc_pre = temp(pathKMC + "{accession}/kmc_{accession}.kmc_pre"),
+        kmc_suf = temp(pathKMC + "{accession}/kmc_{accession}.kmc_suf")
     params:
         kc        = config["k"],
         min_count = config["min_count"],
-        max_count = config["max_count"]
+        max_count = config["max_count"],
+        mem       = config["mem"]
     resources:
         disk_mb = 16500
     priority: 2
     shell:
         """
-        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t8 -fm {input} kmc_{wildcards.accession} .
+        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t1 -m{params.mem} -hp -fm {input} {pathKMC}{wildcards.accession}/kmc_{wildcards.accession} {pathKMC}{wildcards.accession}
         """
 
 rule transform_kmc:
@@ -88,8 +89,8 @@ rule transform_kmc:
     Disk space usage: 72000MB + 15000MB(kmc files) = 87000MB
     """
     input:
-        kmc_pre = "kmc_{accession}.kmc_pre",
-        kmc_suf = "kmc_{accession}.kmc_suf"
+        kmc_pre = pathKMC + "{accession}/kmc_{accession}.kmc_pre",
+        kmc_suf = pathKMC + "{accession}/kmc_{accession}.kmc_suf"
     output:
         kmc_fin = temp(pathAssemblies + "{accession}/kmc_{accession}.txt")
     resources:
@@ -97,7 +98,7 @@ rule transform_kmc:
     priority: 3
     shell:
         """
-        kmc_tools transform kmc_{wildcards.accession} sort . dump -s {pathAssemblies}{wildcards.accession}/kmc_{wildcards.accession}.txt
+        kmc_tools transform {pathKMC}{wildcards.accession}/kmc_{wildcards.accession} sort . dump -s {pathAssemblies}{wildcards.accession}/kmc_{wildcards.accession}.txt
         """
 
 rule write_filelist:
@@ -132,7 +133,7 @@ rule sketch:
     priority: 5
     shell:
         """
-        mike sketch -t 10 -l {input.filelist} -d data/minhash
+        ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 rule write_hashlist:
@@ -158,7 +159,7 @@ rule get_matrix:
         matrix = pathResults + "dist.txt"
     shell:
         """
-        mike dist -l {input} -L {input} -d {pathResults}
+        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}
         """
 
 rule readable_matrix:
