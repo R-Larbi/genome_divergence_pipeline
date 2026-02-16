@@ -27,20 +27,15 @@ with open(args.input, "r") as reader:
     tenth = float(len(rl) / 10)
 
     # We reduce the start by one to account for arrays starting from 0
-    start = (float(args.partition) - 1.) * float(tenth) 
-    print(start)
+    start = (float(args.partition) - 1.) * float(tenth)
     end   = start + tenth
-    print(end)
     # The round method rounds down, so we do funky code to round up:
     # int will round the result down, and if there is a remainder, the comparison will equal True, thus adding one
     # We round up the start and round down the end
     start = int(start) + (start % 1 > 0)
-    
+
     # Sometimes the end float for the last partition has a 0.999... decimal instead of being a whole.
     end   = int(end) + (end % 1 > 0.999)
-
-    print(start)
-    print(end)
 
     for line in rl[start:end]:
         output += line
