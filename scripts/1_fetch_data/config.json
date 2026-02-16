@@ -1,4 +1,4 @@
 {
-    "query": "'Mammalia'",
-    "partition": 10
+    "query": "'(GCF_049350105.2) OR (GCF_037993035.2) OR (GCF_049354715.1) OR (GCF_019923935.1) OR (GCF_028858775.2) OR (GCF_049852395.1) OR (GCF_029281585.2) OR (GCF_028885625.2) OR (GCF_048593235.1) OR (GCF_028878055.3)'",
+    "partition": 1
 }

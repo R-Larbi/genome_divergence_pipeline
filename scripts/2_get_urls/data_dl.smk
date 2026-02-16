@@ -1,5 +1,7 @@
 import json
 
+configfile: "scripts/1_fetch_data/config.json"
+
 # Function to load JSON files
 def load_json(file_path):
     with open(file_path, 'r') as file:
@@ -8,7 +10,9 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-with open(pathResources + "organisms_data") as reader:
+part = str(config["partition"])
+
+with open(pathResources + part + "_organisms_data") as reader:
     """
     Creates the list of URL that will be used for download
     """
@@ -34,7 +38,7 @@ rule download_genomic_data:
     params:
         http_path = GetPath
     input:
-        pathResources + "organisms_data"
+        pathResources + part + "_organisms_data"
     output:
         pathAssemblies + "{accession}/url_genomic.fna.txt"
     shell:

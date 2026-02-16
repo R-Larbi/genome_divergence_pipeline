@@ -10,12 +10,13 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
+part = str(config["partition"])
+
 rule all:
+    params:
+        p = config["partition"]
     input:
-        pathResources + "organisms_data",
-        "data_fetched.flag"
-    shell:
-        "rm data_fetched.flag"
+        pathResources + part + "_organisms_data"
 
 rule ncbi_query:
     output:
@@ -71,11 +72,10 @@ rule partitioning:
     input:
         pathResources + "organisms_data"
     output:
-        temp("data_fetched.flag")
+        pathResources + part + "_organisms_data"
     params:
         part = config["partition"]
     shell:
         """
-        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part}\
-        && touch data_fetched.flag
+        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part} -o {output}
         """

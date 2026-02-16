@@ -4,6 +4,7 @@ parser = argparse.ArgumentParser(description="Script to only keep the nth tenth 
 
 parser.add_argument("-i", "--input", required=True, help="Path of input organisms data file")
 parser.add_argument("-p", "--partition", required=True, default=1, help="Kept tenth of the file")
+parser.add_argument("-o", "--output", required=True, help="Path of output data file")
 
 args = parser.parse_args()
 
@@ -33,9 +34,10 @@ with open(args.input, "r") as reader:
     # The round method rounds down, so we do funky code to round up:
     # int will round the result down, and if there is a remainder, the comparison will equal True, thus adding one
     # We round up the start and round down the end
-    start = int(start) + (start % 10 > 0)
+    start = int(start) + (start % 1 > 0)
+    
     # Sometimes the end float for the last partition has a 0.999... decimal instead of being a whole.
-    end   = int(end) + (end % 10 > 0.999)
+    end   = int(end) + (end % 1 > 0.999)
 
     print(start)
     print(end)
@@ -43,6 +45,6 @@ with open(args.input, "r") as reader:
     for line in rl[start:end]:
         output += line
 
-with open(args.input, "w") as writer:
+with open(args.output, "w") as writer:
     writer.write(fl)
     writer.write(output)
