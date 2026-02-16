@@ -11,7 +11,11 @@ def load_json(file_path):
 globals().update(load_json("scripts/environment_path.json"))
 
 rule all:
-    input: pathResources + "organisms_data"
+    input:
+        pathResources + "organisms_data",
+        "data_fetched.flag"
+    shell:
+        "rm data_fetched.flag"
 
 rule ncbi_query:
     output:
@@ -59,3 +63,19 @@ rule data_analysis:
         pathResources + "organisms_data"
     shell:
         "python3 {pathScripts}1_fetch_data/python/xml_reader.py {input} {output}"
+
+rule partitioning:
+    """
+    Only keeping nth tenth of the data.
+    """
+    input:
+        pathResources + "organisms_data"
+    output:
+        temp("data_fetched.flag")
+    params:
+        part = config["partition"]
+    shell:
+        """
+        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part}\
+        && touch data_fetched.flag
+        """
