@@ -1,6 +1,7 @@
 import json
 
 configfile: "scripts/3_evo_distance/config.json"
+configfile: "scripts/1_fetch_data/config.json"
 
 # Function to load JSON files
 def load_json(file_path):
@@ -10,7 +11,9 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-with open(pathResources + "organisms_data") as reader:
+part = str(config["partition"])
+
+with open(pathResources + part + "_organisms_data") as reader:
     """
     Creates the list of accession numbers
     """
@@ -39,8 +42,7 @@ rule all:
     """
 
     input:
-        matrix = pathResults + "dist.txt",
-        hr_mat = pathResults + "hr_dist.txt"
+        expand(pathMinhash + "kmc_{accession}.minhash.jac", accession=FINAL)
     
 
 rule get_fna:
@@ -136,42 +138,44 @@ rule sketch:
         ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
-rule write_hashlist:
-    """
-    Write the list of sketched files for MIKE processing
-    """
-    input:
-        expand(pathMinhash + "kmc_{accession}.minhash.jac", accession=ACCESSNB)
-    output:
-        hashlist = pathMinhash + "hashlist.txt"
-    shell:
-        """
-        python3 {pathScripts}3_evo_distance/python/write_hashlist.py -i {pathMinhash} -o {output}
-        """
+########### MOVED TO PROCESS_DISTANCE_MATRIX ################
 
-rule get_matrix:
-    """
-    Execute MIKE to get the distance matrix
-    """
-    input:
-        hashlist = pathMinhash + "hashlist.txt"
-    output:
-        matrix = pathResults + "dist.txt"
-    shell:
-        """
-        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}
-        """
+#rule write_hashlist:
+#    """
+#    Write the list of sketched files for MIKE processing
+#    """
+#    input:
+#        expand(pathMinhash + "kmc_{accession}.minhash.jac", accession=ACCESSNB)
+#    output:
+#        hashlist = pathMinhash + "hashlist.txt"
+#    shell:
+#        """
+#        python3 {pathScripts}3_evo_distance/python/write_hashlist.py -i {pathMinhash} -o {output}
+#        """
 
-rule readable_matrix:
-    """
-    Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
-    """
-    input:
-        matrix = pathResults + "dist.txt",
-        info   = pathResources + "organisms_data"
-    output:
-        hr_mat = pathResults + "hr_dist.txt"
-    shell:
-        """
-        python3 {pathScripts}3_evo_distance/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
-        """
+#rule get_matrix:
+#    """
+#    Execute MIKE to get the distance matrix
+#    """
+#    input:
+#        hashlist = pathMinhash + "hashlist.txt"
+#    output:
+#        matrix = pathResults + "dist.txt"
+#    shell:
+#        """
+#        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}
+#        """
+
+#rule readable_matrix:
+#    """
+#    Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
+#    """
+#    input:
+#        matrix = pathResults + "dist.txt",
+#        info   = pathResources + "organisms_data"
+#    output:
+#        hr_mat = pathResults + "hr_dist.txt"
+#    shell:
+#        """
+#        python3 {pathScripts}3_evo_distance/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
+#        """

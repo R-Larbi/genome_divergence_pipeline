@@ -1,8 +1,8 @@
 {
-    "pathAssemblies": "/path/to/genome_divergence_pipeline/data/assemblies/",
-    "pathResources": "/path/to/genome_divergence_pipeline/data/resources/",
-    "pathMinhash": "/path/to/genome_divergence_pipeline/data/minhash/",
-    "pathScripts": "/path/to/genome_divergence_pipeline/scripts/",
-    "pathResults": "/path/to/genome_divergence_pipeline/results/",
-    "pathKMC": "/path/to/genome_divergence_pipeline/data/KMC/"
+    "pathAssemblies": "/home/larbi/genome_divergence_pipeline/data/assemblies/",
+    "pathResources": "/home/larbi/genome_divergence_pipeline/data/resources/",
+    "pathMinhash": "/home/larbi/genome_divergence_pipeline/data/minhash/",
+    "pathScripts": "/home/larbi/genome_divergence_pipeline/scripts/",
+    "pathResults": "/home/larbi/genome_divergence_pipeline/results/",
+    "pathKMC": "/home/larbi/genome_divergence_pipeline/data/KMC/"
 }
