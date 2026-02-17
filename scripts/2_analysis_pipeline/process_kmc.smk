@@ -1,6 +1,6 @@
 import json
 
-configfile: "scripts/3_evo_distance/config.json"
+configfile: "scripts/2_analysis_pipeline/config.json"
 configfile: "scripts/1_fetch_data/config.json"
 
 # Function to load JSON files
