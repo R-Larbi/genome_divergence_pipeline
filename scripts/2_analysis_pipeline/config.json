@@ -1,6 +1,6 @@
 {
-    "k": 21,
+    "k": 19,
     "min_count": 1,
     "max_count": 5,
-    "threshold": 0.17
+    "mem": 12
 }

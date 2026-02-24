@@ -1,0 +1,8 @@
+{
+    "pathAssemblies": "/path/to/genome_divergence_pipeline/data/assemblies/",
+    "pathResources": "/path/to/genome_divergence_pipeline/data/resources/",
+    "pathMinhash": "/path/to/genome_divergence_pipeline/data/minhash/",
+    "pathScripts": "/path/to/genome_divergence_pipeline/scripts/",
+    "pathResults": "/path/to/genome_divergence_pipeline/results/",
+    "pathKMC": "/path/to/genome_divergence_pipeline/data/KMC/"
+}
