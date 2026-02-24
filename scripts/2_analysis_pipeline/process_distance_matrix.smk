@@ -44,7 +44,7 @@ rule write_hashlist:
         hashlist = pathMinhash + "hashlist.txt"
     shell:
         """
-        python3 {pathScripts}3_evo_distance/python/write_hashlist.py -i {pathMinhash} -o {output}
+        python3 {pathScripts}2_analysis_pipeline/python/write_hashlist.py -i {pathMinhash} -o {output}
         """
 
 rule get_matrix:
@@ -71,5 +71,5 @@ rule readable_matrix:
         hr_mat = pathResults + "hr_dist.txt"
     shell:
         """
-        python3 {pathScripts}3_evo_distance/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
+        python3 {pathScripts}2_analysis_pipeline/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
         """
