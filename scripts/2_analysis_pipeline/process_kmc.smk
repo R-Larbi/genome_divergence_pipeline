@@ -82,7 +82,7 @@ rule process_kmc:
     priority: 2
     shell:
         """
-        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t1 -m{params.mem} -hp -fm {input} {pathKMC}{wildcards.accession}/kmc_{wildcards.accession} {pathKMC}{wildcards.accession}
+        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t1 -m{params.mem} -hp -fm {input} {pathKMC}{wildcards.accession}/kmc_{wildcards.accession}   {pathKMC}{wildcards.accession}
         """
 
 rule transform_kmc:
@@ -117,7 +117,7 @@ rule write_filelist:
     priority: 4
     shell:
         """
-        python3 {pathScripts}3_evo_distance/python/write_filelist.py -i {input} -o {output}
+        python3 {pathScripts}2_analysis_pipeline/python/write_filelist.py -i {input} -o {output}
         """
 
 rule sketch:
