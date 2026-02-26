@@ -75,7 +75,7 @@ rule busco_protein:
     Execute BUSCO on anottated data
     """
     input:
-        faa = expand("data/assemblies/{accession}/protein.faa", accession=CURATED)
+        faa = expand("data/assemblies/{accession}/clean_protein.faa", accession=CURATED)
     output:
         table = expand("data/BUSCO/{accession}/run_eukaryota_odb12/full_table.tsv", accession=CURATED)
     shell:
@@ -115,7 +115,7 @@ checkpoint busco_extract_genomic:
         fna = expand("data/assemblies/{accession}/genomic.fna", accession=UNCURATED),
         gff = expand("data/BUSCO/{accession}/single_copy_busco_sequences.gff", accession=UNCURATED)
     output:
-        directory("data/BUSCO/{accession}/extracted_buscos")
+        directory(expand("data/BUSCO/{accession}/extracted_buscos", accession=UNCURATED))
     shell:
         """
         elt=' ' read -r -a array <<< "{UNCURATED}"
@@ -200,7 +200,7 @@ rule concatenate_all_buscos:
     Concatenate BUSCO files of all species
     """
     input:
-        busco = "data/BUSCO/{accession}/all_buscos.fa"
+        busco = expand("data/BUSCO/{accession}/all_buscos.fa", accession=ACCESSNB)
     output:
         busco_cat = "data/BUSCO/busco_full.fa"
     shell:
@@ -235,3 +235,8 @@ rule run_dnds_process:
         makeblastdb -in {input.busco_cat} -dbtype nucl -parse_seqids
         csh scripts/3_cds_extraction/csh/Aln_dNdS_run_all.csh {input.pair_list} {input.busco_cat} 1 {output}
         """
+
+if CURATED != []:
+    include: "module_get_faa.smk"
+    include: "module_get_gff.smk"
+include: "module_get_fna.smk"

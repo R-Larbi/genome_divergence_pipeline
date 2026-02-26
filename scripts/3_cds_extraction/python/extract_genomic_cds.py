@@ -58,6 +58,9 @@ if not args.output.endswith("/"):
     args.output = args.output + "/"
 # Writing to output
 
+if not os.path.exists(args.output):
+    os.mkdir(args.output)
+
 for elt in outlist:
     with open(args.output + elt[1] + ".fasta", "w") as writer:
         writer.write(">"+elt[1]+"-"+args.accession+"\t"+ elt[0])

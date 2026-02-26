@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from Bio import SeqIO
 import gzip
+import os
  
 parser = argparse.ArgumentParser()
 
@@ -104,6 +105,9 @@ for record in parsed:
 if not args.output.endswith("/"):
     args.output = args.output + "/"
 # Writing to output
+
+if not os.path.exists(args.output):
+    os.mkdir(args.output)
 
 for busco in out_dict.keys():
     with open(args.output + busco +".fasta", "w") as writer:

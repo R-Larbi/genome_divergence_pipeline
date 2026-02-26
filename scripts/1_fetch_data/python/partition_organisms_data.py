@@ -3,7 +3,8 @@ import argparse
 parser = argparse.ArgumentParser(description="Script to only keep the nth tenth of an organisms data file")
 
 parser.add_argument("-i", "--input", required=True, help="Path of input organisms data file")
-parser.add_argument("-p", "--partition", required=True, default=1, help="Kept tenth of the file")
+parser.add_argument("-p", "--partition", required=False, default=1, help="Kept tenth of the file")
+parser.add_argument("-m", "--max_part", required=False, default=10, help="Number of partitions")
 parser.add_argument("-o", "--output", required=True, help="Path of output data file")
 
 args = parser.parse_args()
@@ -17,6 +18,9 @@ This is to partition the workflow, allowing us to work on multiple machines at o
 fl = ""
 output = ""
 
+max_part = args.max_part
+part = args.partition
+
 with open(args.input, "r") as reader:
     l  = reader.readlines()
     # We keep the first line as it is important for formatting
@@ -24,11 +28,11 @@ with open(args.input, "r") as reader:
     rl = l[1:]
 
     # Getting the range to extract
-    tenth = float(len(rl) / 10)
+    fract = float(len(rl) / max_part)
 
     # We reduce the start by one to account for arrays starting from 0
-    start = (float(args.partition) - 1.) * float(tenth)
-    end   = start + tenth
+    start = (float(part) - 1.) * float(fract)
+    end   = start + fract
 
     # We round up the start and end
     start = int(start)
