@@ -110,7 +110,7 @@ if not os.path.exists(args.output):
     os.mkdir(args.output)
 
 for busco in out_dict.keys():
-    with open(args.output + busco +".fasta", "w") as writer:
+    with open(args.output + args.accession + "_" + busco +".fasta", "w") as writer:
         writer.write(f">{busco}-{args.accession}\t{out_dict[busco]["chr"]}\tPROT_ID:{out_dict[busco]["prot"]}\n")
         for i in range(len(out_dict[busco]["seq"])):
             writer.write(out_dict[busco]["seq"][i])

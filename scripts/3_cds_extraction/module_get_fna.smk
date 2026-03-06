@@ -3,9 +3,9 @@ rule get_fna:
     Get the fna file as tempory file
     """
     input:
-        url_fna="data/assemblies/{accession}/url_genomic.fna.txt"
+        url_fna=pathAssemblies + "{accession}/url_genomic.fna.txt"
     output:
-        file_fna=temp("data/assemblies/{accession}/genomic.fna")
+        file_fna=temp(pathAssemblies + "{accession}/genomic.fna")
     shell:
         """
         cd data/assemblies/{wildcards.accession}/ \

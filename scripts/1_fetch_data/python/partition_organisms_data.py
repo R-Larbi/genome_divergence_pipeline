@@ -18,8 +18,8 @@ This is to partition the workflow, allowing us to work on multiple machines at o
 fl = ""
 output = ""
 
-max_part = args.max_part
-part = args.partition
+max_part = int(args.max_part)
+part = int(args.partition)
 
 with open(args.input, "r") as reader:
     l  = reader.readlines()
@@ -39,7 +39,6 @@ with open(args.input, "r") as reader:
 
     # Sometimes the end float for the last partition has a 0.999... decimal instead of being a whole.
     end   = int(end) + (end % 1 > 0.999)
-
     for line in rl[start:end]:
         output += line
 

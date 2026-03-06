@@ -17,7 +17,7 @@ def processGff(gff:str):
             splitted = line.strip().split("\t")
             if len(splitted) < 3:
                 continue
-            if splitted[2] != "gene" and splitted[2] != "CDS":
+            if splitted[2] != "gene" and splitted[2] != "pseudogene" and splitted[2] != "CDS":
                 continue
             start  = int(splitted[3])
             end    = int(splitted[4])
@@ -31,7 +31,7 @@ def processGff(gff:str):
             prot_length = 0
 
             xrefs = data.split(';')[2].split(",")
-            if splitted[2] == "gene":
+            if splitted[2] == "gene" or splitted[2] == "pseudogene":
                 for xref in xrefs:
                     ref=xref.split(':')
                     if ref[0] == "Dbxref=GeneID" or ref[0] == "GeneID":
@@ -80,6 +80,9 @@ def processGff(gff:str):
                         if ref[0] == "locus_tag" :
                             cds_gene_id = ref[1]
                             flag_gene = 1
+                if not cds_gene_id in gene_dict.keys():
+                    print(f"Error: not {cds_gene_id} in known genes\nData: {xrefs}")
+                    continue
                 if gene_dict[cds_gene_id]["Prot"] == prot_name:
                     gene_dict[cds_gene_id]["Longest"] += length
                 else:
