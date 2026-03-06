@@ -74,8 +74,9 @@ rule partitioning:
     output:
         pathResources + part + "_organisms_data"
     params:
-        part = config["partition"]
+        part = config["partition"],
+        max_part = config["max_part"]
     shell:
         """
-        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part} -o {output}
+        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part} -m {params.max_part} -o {output}
         """

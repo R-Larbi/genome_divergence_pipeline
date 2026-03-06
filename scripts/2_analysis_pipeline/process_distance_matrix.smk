@@ -1,4 +1,6 @@
 import json
+import glob
+import os
 
 configfile: "scripts/2_analysis_pipeline/config.json"
 configfile: "scripts/1_fetch_data/config.json"
@@ -23,41 +25,28 @@ with open(pathResources + "organisms_data") as reader:
 
 FINAL = ACCESSNB
 
+def all_matrices(wildcards):
+    clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
+    return expand(pathResults + "{clade}/dist.txt", clade=clades) + expand(pathResults + "{clade}/hr_dist.txt", clade=clades)
 
 rule all:
     """
     Get the distance matrix and its readable counterpart
     """
-
     input:
-        matrix = pathResults + "dist.txt",
-        hr_mat = pathResults + "hr_dist.txt"
-
-
-rule write_hashlist:
-    """
-    Write the list of sketched files for MIKE processing
-    """
-    input:
-        expand(pathMinhash + "kmc_{accession}.minhash.jac", accession=ACCESSNB)
-    output:
-        hashlist = pathMinhash + "hashlist.txt"
-    shell:
-        """
-        python3 {pathScripts}2_analysis_pipeline/python/write_hashlist.py -i {pathMinhash} -o {output}
-        """
+        all_matrices
 
 rule get_matrix:
     """
     Execute MIKE to get the distance matrix
     """
     input:
-        hashlist = pathMinhash + "hashlist.txt"
+        hashlist = pathMinhash + "hashlists/{clade}_hashlist.txt"
     output:
-        matrix = pathResults + "dist.txt"
+        matrix = pathResults + "{clade}/dist.txt"
     shell:
         """
-        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}
+        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}/{wildcards.clade}
         """
 
 rule readable_matrix:
@@ -65,10 +54,10 @@ rule readable_matrix:
     Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
     """
     input:
-        matrix = pathResults + "dist.txt",
+        matrix = pathResults + "{clade}/dist.txt",
         info   = pathResources + "organisms_data"
     output:
-        hr_mat = pathResults + "hr_dist.txt"
+        hr_mat = pathResults + "{clade}/hr_dist.txt"
     shell:
         """
         python3 {pathScripts}2_analysis_pipeline/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}

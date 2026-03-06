@@ -4,9 +4,9 @@ rule get_prot_fasta:
      Get the protein fasta file as tempory file
      """
      input:
-         url_prot_fasta="data/assemblies/{accession}/url_protein.faa.txt"
+         url_prot_fasta=pathAssemblies + "{accession}/url_protein.faa.txt"
      output:
-         file_faa="data/assemblies/{accession}/protein.faa"
+         file_faa=pathAssemblies + "{accession}/protein.faa"
      shell:
          """
          cd data/assemblies/{wildcards.accession}/ \

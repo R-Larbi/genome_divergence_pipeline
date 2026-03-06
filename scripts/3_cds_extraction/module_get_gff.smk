@@ -3,9 +3,9 @@ rule get_gff:
     Get the gff file as tempory file
     """
     input:
-        url_gff="data/assemblies/{accession}/url_genomic.gff.txt"
+        url_gff=pathAssemblies + "{accession}/url_genomic.gff.txt"
     output:
-        file_gff=temp("data/assemblies/{accession}/genomic.gff")
+        file_gff=temp(pathAssemblies + "{accession}/genomic.gff")
     shell:
         """
         cd data/assemblies/{wildcards.accession}/ \

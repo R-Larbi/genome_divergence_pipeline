@@ -1,6 +1,7 @@
 import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
+import os
 
 parser = argparse.ArgumentParser(description="Script that takes a genomic fasta and a gff and returns the sequences trimmed with only CDS regions")
 
@@ -62,7 +63,7 @@ if not os.path.exists(args.output):
     os.mkdir(args.output)
 
 for elt in outlist:
-    with open(args.output + elt[1] + ".fasta", "w") as writer:
+    with open(args.output + args.accession + "_" + elt[1] + ".fasta", "w") as writer:
         writer.write(">"+elt[1]+"-"+args.accession+"\t"+ elt[0])
         writer.write("\n")
         for i in range(len(elt[2])):
