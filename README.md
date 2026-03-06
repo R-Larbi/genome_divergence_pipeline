@@ -62,6 +62,8 @@ scripts/1_fetch_data/config.json defines the query to NCBI, as well as the total
 
 scripts/2_analysis_pipeline/config.json contains 4 variables. k is the length of kmers for the kmer count step. Recommended value is 21: any lower is too inaccurate. min_count and max_count are used in the KMC command line (refer to KMC documentation); min_count must remain 1, but you may adjust max_count (recommended is 5). mem is the amount of memory used in GB by the process, 12 is base.
 
+scripts/4_seaview_analysis/config.json contains one variable, corresponding to the distance threshold under which two species should be considered of a same cluster.
+
 ## Script folder 1 - Data fetch
 
 ### Step 1 - Getting organism information
