@@ -36,7 +36,7 @@ rule pairs:
         t = config["threshold"]
     shell:
         """
-        python3 {pathScripts}4_cluster_species/python/cluster_species.py -i {input} -t {params.t} -o {output}
+        python3 {pathScripts}4_seaview_analysis/python/cluster_species.py -i {input} -t {params.t} -o {output}
         """
 
 rule silixx:
@@ -46,7 +46,7 @@ rule silixx:
         temp(pathResults + "{clade}/clustered_species")
     shell:
         """
-        silexx "$(wc -l {pathResults}{wildcards.clade}/dist.txt)" {input} > {output}
+        silixx "$(wc -l {pathResults}{wildcards.clade}/dist.txt)" {input} > {output}
         """
 
 rule create_pair_list:
@@ -57,7 +57,7 @@ rule create_pair_list:
         pathResults + "{clade}/pair_list"
     shell:
         """
-        python3 {pathScripts}4_cluster_species/python/create_pairs.py -i {input.busco} -c {input.clust} -o {output}
+        python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -i {input.busco} -c {input.clust} -o {output}
         """
 
 def get_clades_pair_lists(wildcards):

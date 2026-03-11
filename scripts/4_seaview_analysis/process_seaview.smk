@@ -1,8 +1,5 @@
 import json
 
-configfile: "scripts/2_analysis_pipeline/config.json"
-configfile: "scripts/1_fetch_data/config.json"
-
 # Function to load JSON files
 def load_json(file_path):
     with open(file_path, 'r') as file:
@@ -36,5 +33,5 @@ rule seaview:
     shell:
         """
         makeblastdb -in {input.busco} -dbtype nucl -parse_seqids
-        csh scripts/3_cds_extraction/csh/Aln_dNdS_run_all.csh {input.pairs} {input.busco} 1 {output}
+        csh scripts/4_seaview_analysis/csh/Aln_dNdS_run_all.csh {input.pairs} {input.busco} 1 {output}
         """
