@@ -57,7 +57,7 @@ checkpoint write_hashlist:
     """
     input:
         acc_list = pathMinhash + "accession_list.txt",
-        tax = pathResources + "ncbi_dataset_eukaryota_reduced.taxonomy"
+        tax = pathResources + "ncbi_dataset_eukaryota.taxonomy"
     output:
         hashlist = directory(pathMinhash + "hashlists")
     shell:

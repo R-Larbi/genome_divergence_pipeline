@@ -1,0 +1,30 @@
+
+How to compute dN and dS on many pairs of homologous genes
+
+# 1. Input data:
+
+CDS_DB.fa : FASTA file containing CDS sequences
+list_pairs : a file providing the list of pairs of homologs to be analyzed
+
+# 1. Prepare a parsable BLAST db
+
+makeblastdb -in  CDS_DB.fa  -dbtype nucl -parse_seqids
+
+# 2. Extract CDS sequences from BLASTdb, align them at the protein level (here using genetic_code=6 because we align ciliate sequences), and compute dN and dS with seaview
+
+csh Aln_dNdS_run_all.csh list_pairs CDS_DB.fa 6 list_pairs.kaKs 
+
+
+############################
+
+"Aln_dNdS_run_all.csh" runs "Aln_dNdS.csh" on each pair of sequences from file "list_pairs"
+
+"Aln_dNdS.csh" extract CDS sequences SEQ1 SEQ2 from BLASTDB , align them at protein level (using genetic_code), compute dN and dS
+
+
+###
+
+NB: to align CDSs at the protein level, we can use seaview:
+
+seaview -o essai_prot.aln -align_at_protein_level -align NP_001091643.1.fasta
+

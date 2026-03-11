@@ -82,7 +82,8 @@ rule process_kmc:
     priority: 2
     shell:
         """
-        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t1 -m{params.mem} -hp -fm {input} {pathKMC}{wildcards.accession}/kmc_{wildcards.accession}   {pathKMC}{wildcards.accession}
+        mkdir -p /tmp/rl-snakemake-kmc/{wildcards.accession}
+        kmc -k{params.kc} -ci{params.min_count} -cx{params.max_count} -t1 -m{params.mem} -hp -fm {input} {pathKMC}{wildcards.accession}/kmc_{wildcards.accession} /tmp/rl-snakemake-kmc/{wildcards.accession}
         """
 
 rule transform_kmc:
@@ -135,7 +136,7 @@ rule sketch:
     priority: 5
     shell:
         """
-        ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
+        mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 ########### MOVED TO PROCESS_DISTANCE_MATRIX ################

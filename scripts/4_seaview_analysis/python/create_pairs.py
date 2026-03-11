@@ -22,10 +22,12 @@ def get_tax_busco(busco_file: str):
             busco_dict[busco].append(tax)
 
 def get_pairs(cluster_file: str):
-    with open(args.input, "r") as reader:
+    with open(cluster_file, "r") as reader:
         l = reader.readlines()
         for line in l:
-            line = line.strip().split(" ")
+            if line.strip() == "":
+                continue
+            line = line.strip().split("\t")
             clust_dict[line[1]] = line[0]
 
 busco_dict = {}
@@ -39,7 +41,9 @@ with open(args.output, "w") as writer:
             continue
         for i in range(0, len(busco_dict[busco])-1, 1):
             for j in range(i+1, len(busco_dict[busco]), 1):
-                if not busco_dict[busco][i] in clust_dict.keys() or not busco_dict[busco][j] in clust_dict.keys():
+                trunc_busco_i = busco_dict[busco][i].strip().split(".")[0]
+                trunc_busco_j = busco_dict[busco][j].strip().split(".")[0]
+                if not trunc_busco_i in clust_dict.keys() or not trunc_busco_j in clust_dict.keys():
                     continue
-                if clust_dict[busco_dict[busco][i]] == clust_dict[busco_dict[busco][j]]:
+                if clust_dict[trunc_busco_i] == clust_dict[trunc_busco_j]:
                     writer.write(f"{busco}-{busco_dict[busco][i]}\t{busco}-{busco_dict[busco][j]}\n")

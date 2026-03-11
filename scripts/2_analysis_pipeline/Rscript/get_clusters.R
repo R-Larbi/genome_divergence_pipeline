@@ -23,11 +23,11 @@ for (i in 1:length(acc_data)) {
 
 tax_data <- tax_data[tax_data$Assembly_Accession %in% acc_data,]
 ## Cleaning
-tax_data$Kingdom[which(tax_data$Kingdom == "")] <- "Other_Eukaryota"
-tax_data$Phylum[which(tax_data$Phylum == "")] <- "No_Phylum"
-tax_data$Class[which(tax_data$Class == "")] <- "No_Class"
-tax_data$Order[which(tax_data$Order == "")] <- "No_Order"
-tax_data$Family[which(tax_data$Family == "")] <- "No_Family"
+tax_data$Kingdom[which(tax_data$Kingdom == "")] <- "OtherEukaryota"
+tax_data$Phylum[which(tax_data$Phylum == "")] <- "NoPhylum"
+tax_data$Class[which(tax_data$Class == "")] <- "NoClass"
+tax_data$Order[which(tax_data$Order == "")] <- "NoOrder"
+tax_data$Family[which(tax_data$Family == "")] <- "NoFamily"
 
 ## Getting names of clades with less than 1000 members
 ki_df <- table(tax_data$Kingdom)

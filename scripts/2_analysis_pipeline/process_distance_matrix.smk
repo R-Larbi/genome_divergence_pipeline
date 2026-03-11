@@ -46,7 +46,7 @@ rule get_matrix:
         matrix = pathResults + "{clade}/dist.txt"
     shell:
         """
-        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}/{wildcards.clade}
+        mike dist -l {input} -L {input} -d {pathResults}/{wildcards.clade}
         """
 
 rule readable_matrix:

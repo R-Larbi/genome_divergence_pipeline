@@ -35,17 +35,26 @@ with open(args.input, "r") as reader:
         while j < len(l):
             if float(l[j]) < args.threshold:
                 neighbors[l[0]].append(indices[j])
-                neighbors[indices[j]].append(l[0])
             j += 1
         i += 1
         l = reader.readline()
 
+parsed = []
+
 # Writing to output
 with open(args.output, "w") as writer:
-    for i in range(1, len(indices.keys())):
+    for i in range(1, len(indices.keys())+1):
+
+        if neighbors[indices[i]] == []:
+            if not indices[i] in parsed:
+                writer.write(indices[i]+"\t"+indices[i]+"\n")
+            continue
+        
         writer.write(indices[i]+"\t")
+
         for elt in neighbors[indices[i]]:
             writer.write(elt)
+            parsed.append(elt)
             if elt is neighbors[indices[i]][-1]:
                 writer.write('\n')
             else:
