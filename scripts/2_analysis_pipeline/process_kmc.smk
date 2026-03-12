@@ -136,7 +136,7 @@ rule sketch:
     priority: 5
     shell:
         """
-        mike sketch -t 1 -l {input.filelist} -d data/minhash
+         ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 ########### MOVED TO PROCESS_DISTANCE_MATRIX ################
