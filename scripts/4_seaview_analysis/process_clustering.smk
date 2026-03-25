@@ -29,9 +29,9 @@ rule all:
 
 rule pairs:
     input:
-        pathResults + "{clade}/dist.txt"
+        pathResults + "Clades/{clade}/dist.txt"
     output:
-        temp(pathResults + "{clade}/species_pairs")
+        temp(pathResults + "Clades/{clade}/species_pairs")
     params:
         t = config["threshold"]
     shell:
@@ -41,9 +41,9 @@ rule pairs:
 
 rule silixx:
     input:
-        pathResults + "{clade}/species_pairs"
+        pathResults + "Clades/{clade}/species_pairs"
     output:
-        temp(pathResults + "{clade}/clustered_species")
+        temp(pathResults + "Clades/{clade}/clustered_species")
     shell:
         """
         silixx "$(wc -l {pathResults}{wildcards.clade}/dist.txt)" {input} > {output}
@@ -51,10 +51,10 @@ rule silixx:
 
 rule create_pair_list:
     input:
-        clust = pathResults + "{clade}/clustered_species",
+        clust = pathResults + "Clades/{clade}/clustered_species",
         busco = pathBUSCO + "busco_full.fa"
     output:
-        pathResults + "{clade}/pair_list"
+        pathResults + "Clades/{clade}/pair_list"
     shell:
         """
         python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -i {input.busco} -c {input.clust} -o {output}
@@ -62,7 +62,7 @@ rule create_pair_list:
 
 def get_clades_pair_lists(wildcards):
     clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
-    return expand(pathResults + "{clade}/pair_list", clade=clades)
+    return expand(pathResults + "Clades/{clade}/pair_list", clade=clades)
 
 rule concatenate_pair_lists:
     input:

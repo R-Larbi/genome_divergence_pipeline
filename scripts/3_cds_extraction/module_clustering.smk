@@ -25,11 +25,7 @@ FINAL = ACCESSNB
 
 def get_clades_clusters(wildcards):
     clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
-    return expand(pathResults + "{clade}/clustered_species", clade=clades)
-
-def get_pairs(wildcards):
-    clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
-    return expand(pathResults + "{clade}/species_pairs", clade=clades)
+    return expand(pathResults + "Clades/{clade}/filtered_clustered_species", clade=clades)
 
 rule all:
     input:
@@ -37,9 +33,9 @@ rule all:
 
 rule pairs:
     input:
-        pathResults + "{clade}/dist.txt"
+        pathResults + "Clades/{clade}/dist.txt"
     output:
-        temp(pathResults + "{clade}/species_pairs")
+        temp(pathResults + "Clades/{clade}/species_pairs")
     params:
         t = config["threshold"]
     shell:
@@ -49,24 +45,40 @@ rule pairs:
 """
 rule silixx:
     input:
-        dist = pathResults + "{clade}/dist.txt",
-        pair = pathResults + "{clade}/species_pairs"
+        dist = pathResults + "Clades/{clade}/dist.txt",
+        pair = pathResults + "Clades/{clade}/species_pairs"
     output:
-        pathResults + "{clade}/clustered_species"
+        pathResults + "Clades/{clade}/clustered_species"
     shell:
         ""
         {pathScripts}3_cds_extraction/bash/run_silixx_all_clades.sh {input.dist} {input.pair} {output}
         ""
 """
+
+rule filter_clusters:
+    """
+    Removes all species which do not share a cluster with any other
+    """
+    input:
+        pathResults + "Clades/{clade}/clustered_species"
+    output:
+        pathResults + "Clades/{clade}/filtered_clustered_species"
+    shell:
+        """
+        python3 {pathScripts}3_cds_extraction/python/filter_clusters.py -i {input} -o {output}
+        """
+
 rule filter_org_data:
     input:
         get_clades_clusters,
         org_data = pathResources + "organisms_data"
     output:
-        pathResources + "filtered_organisms_data"
+        filtered = pathResources + "filtered_organisms_data",
+        spec_list = pathResults + "list_species_to_process"
     shell:
         """
-        for i in {pathResults}*/clustered_species; do cat $i; done >> {pathResults}cat_clustered_species
-        python3 scripts/3_cds_extraction/python/filter_org_data.py -i {pathResults}cat_clustered_species -d {input.org_data} -o {output}
+        for i in {pathResults}*/filtered_clustered_species; do cat $i; done > {pathResults}cat_clustered_species
+        awk -F '\t' '{{print $2}}' {pathResults}cat_clustered_species > {output.spec_list}
+        python3 scripts/3_cds_extraction/python/filter_org_data.py -i {pathResults}cat_clustered_species -d {input.org_data} -o {output.filtered}
         rm {pathResults}cat_clustered_species
         """

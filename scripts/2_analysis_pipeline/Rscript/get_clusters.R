@@ -14,13 +14,15 @@ if (length(args)==0 || length(args)==1) {
   stop("Rscript error: too many arguments detected, must only be two (taxonomy dataset and accession list)", call.=FALSE)
 }
 
-tax_data <- read.table(args[1], sep="\t", header=T)
-acc_data <- scan(args[2], what=character(), sep="\n")
+tax_data <- read.table(args[1], sep="\t", header=T)   # Taxonomy data
+acc_data <- scan(args[2], what=character(), sep="\n") # List of accession numbers
+## Cleaning
 for (i in 1:length(acc_data)) {
   acc_data[i] <- str_remove_all(acc_data[i], "kmc_")
   acc_data[i] <- str_remove_all(acc_data[i], ".minhash.jac")
 }
 
+## Only keep taxonomy data for the species listed
 tax_data <- tax_data[tax_data$Assembly_Accession %in% acc_data,]
 ## Cleaning
 tax_data$Kingdom[which(tax_data$Kingdom == "")] <- "OtherEukaryota"
@@ -30,6 +32,7 @@ tax_data$Order[which(tax_data$Order == "")] <- "NoOrder"
 tax_data$Family[which(tax_data$Family == "")] <- "NoFamily"
 
 ## Getting names of clades with less than 1000 members
+## TODO: reduce to 500
 ki_df <- table(tax_data$Kingdom)
 ki_1000 <- ki_df[which(ki_df < 1000)]
 
@@ -45,6 +48,7 @@ or_1000 <- or_df[which(or_df < 1000)]
 ## Initialize Groups
 tax_data$Group <- NA
 
+## TODO: make it so that if the associated clade would be null, instead attribute the lowest specified clade above that one
 # Kingdom < 1000
 for (i in 1:length(ki_1000)) {
   tax_data$Group[which(tax_data$Kingdom == names(ki_1000))] <- names(ki_1000)
@@ -62,6 +66,7 @@ for (i in 1:length(or_1000)) {
   tax_data$Group[which(tax_data$Order == names(or_1000)[i] & is.na(tax_data$Group))] <- names(or_1000)[i]
 }
 # Remainder by Family
+## TODO: remainder by Genus instead as some families will be above 500
 tax_data$Group[which(is.na(tax_data$Group))] <- tax_data$Family[which(is.na(tax_data$Group))]
 
 ## Writing to files

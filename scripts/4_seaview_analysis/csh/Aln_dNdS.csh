@@ -15,16 +15,16 @@ set genetic_code = $4
 set outfile = $5
 
 # Empty files
-echo "" > tmp_seq_nuc.Ka
-echo "" > tmp_seq_nuc.Ks
+echo "" > "$1"-"$2"-tmp_seq_nuc.Ka
+echo "" > "$1"-"$2"-tmp_seq_nuc.Ks
 echo "" > $outfile
 
 # Extract sequences
-blastdbcmd -db $BLASTDB  -entry $SEQ1 > tmp_seq_nuc1.fa
-blastdbcmd -db $BLASTDB  -entry $SEQ2 > tmp_seq_nuc2.fa
+blastdbcmd -db $BLASTDB  -entry $SEQ1 > "$1"-"$2"-tmp_seq_nuc1.fa
+blastdbcmd -db $BLASTDB  -entry $SEQ2 > "$1"-"$2"-tmp_seq_nuc2.fa
 
-set n1 = `grep ">" tmp_seq_nuc1.fa | wc -l`
-set n2 = `grep ">" tmp_seq_nuc2.fa | wc -l`
+set n1 = `grep ">" "$1"-"$2"-tmp_seq_nuc1.fa | wc -l`
+set n2 = `grep ">" "$1"-"$2"-tmp_seq_nuc2.fa | wc -l`
 
 if($n1 != 1) then
 	echo "EXIT: $SEQ1 not found"
@@ -38,55 +38,55 @@ if($n2 != 1) then
 endif
 
 # Prepare MASE file (with information on genetic code)
-echo ";; " > tmp_seq_nuc.mase
-echo ";/transl_table=$genetic_code" >> tmp_seq_nuc.mase
-cut -f1 -d" " tmp_seq_nuc1.fa | sed "s/>//g" >> tmp_seq_nuc.mase
-echo ";/transl_table=$genetic_code" >> tmp_seq_nuc.mase
-cut -f1 -d" " tmp_seq_nuc2.fa  |cut -f1 -d" " | sed "s/>//g" >> tmp_seq_nuc.mase
+echo ";; " > "$1"-"$2"-tmp_seq_nuc.mase
+echo ";/transl_table=$genetic_code" >> "$1"-"$2"-tmp_seq_nuc.mase
+cut -f1 -d" " "$1"-"$2"-tmp_seq_nuc1.fa | sed "s/>//g" >> "$1"-"$2"-tmp_seq_nuc.mase
+echo ";/transl_table=$genetic_code" >> "$1"-"$2"-tmp_seq_nuc.mase
+cut -f1 -d" " "$1"-"$2"-tmp_seq_nuc2.fa  |cut -f1 -d" " | sed "s/>//g" >> "$1"-"$2"-tmp_seq_nuc.mase
 
 # Align MASE file
-$seaview -o tmp_seq_nuc.aln.mase -align_at_protein_level -align tmp_seq_nuc.mase >& tmp_aln.log
+$seaview -o "$1"-"$2"-tmp_seq_nuc.aln.mase -align_at_protein_level -align "$1"-"$2"-tmp_seq_nuc.mase >& "$1"-"$2"-tmp_aln.log
 
 # Compute distances
-$seaview  -distance  Ks -distance_matrix tmp_seq_nuc.Ks -build_tree tmp_seq_nuc.aln.mase >& tmp_Ks.log
-$seaview  -distance  Ka -distance_matrix tmp_seq_nuc.Ka -build_tree tmp_seq_nuc.aln.mase >& tmp_Ka.log
+$seaview  -distance  Ks -distance_matrix "$1"-"$2"-tmp_seq_nuc.Ks -build_tree "$1"-"$2"-tmp_seq_nuc.aln.mase >& "$1"-"$2"-tmp_Ks.log
+$seaview  -distance  Ka -distance_matrix "$1"-"$2"-tmp_seq_nuc.Ka -build_tree "$1"-"$2"-tmp_seq_nuc.aln.mase >& "$1"-"$2"-tmp_Ka.log
 
 # Check saturation
-set saturationKs = `grep "Saturation between" tmp_Ks.log |wc -l`
-set saturationKa = `grep "Saturation between" tmp_Ka.log |wc -l`
+set saturationKs = `grep "Saturation between" "$1"-"$2"-tmp_Ks.log |wc -l`
+set saturationKa = `grep "Saturation between" "$1"-"$2"-tmp_Ka.log |wc -l`
 
 set Ks = "NA"
 if($saturationKs == 0) then 
-	set n = `cat tmp_seq_nuc.Ks | wc -l`
+	set n = `cat "$1"-"$2"-tmp_seq_nuc.Ks | wc -l`
 	if($n != 7) then
-		echo "EXIT: problem in tmp_seq_nuc.Ks"
+		echo "EXIT: problem in "$1"-"$2"-tmp_seq_nuc.Ks"
 		echo "$SEQ1 $SEQ2 NA NA" > $outfile
 		exit(1)
 	endif
-	set Ks = `tail -1 tmp_seq_nuc.Ks |cut -f2 -d" "`
+	set Ks = `tail -1 "$1"-"$2"-tmp_seq_nuc.Ks |cut -f2 -d" "`
 else if ($saturationKs == 1) then 
 	set Ks = 99
 endif
 
 set Ka = "NA"
 if($saturationKa == 0) then 
-	set n = `cat tmp_seq_nuc.Ka | wc -l`
+	set n = `cat "$1"-"$2"-tmp_seq_nuc.Ka | wc -l`
 	if($n != 7) then
-		echo "EXIT: problem in tmp_seq_nuc.Ka"
+		echo "EXIT: problem in "$1"-"$2"-tmp_seq_nuc.Ka"
 		echo "$SEQ1 $SEQ2 NA NA" > $outfile
 		exit(1)
 	endif
-	set Ka = `tail -1 tmp_seq_nuc.Ka |cut -f2 -d" "`
+	set Ka = `tail -1 "$1"-"$2"-tmp_seq_nuc.Ka |cut -f2 -d" "`
 else if ($saturationKa == 1) then 
 	set Ka = 99
 endif
 
 
 # Extract distances
-set Ka = `tail -1 tmp_seq_nuc.Ka |cut -f2 -d" "`
+set Ka = `tail -1 "$1"-"$2"-tmp_seq_nuc.Ka |cut -f2 -d" "`
 
 echo "$SEQ1 $SEQ2 $Ka $Ks" > $outfile
 
-\rm tmp_seq_nuc1.fa tmp_seq_nuc2.fa tmp_seq_nuc.mase tmp_seq_nuc.aln.mase tmp_seq_nuc.Ks tmp_seq_nuc.Ka tmp_Ks.log tmp_Ka.log tmp_aln.log
+\rm "$1"-"$2"-tmp_seq_nuc1.fa "$1"-"$2"-tmp_seq_nuc2.fa "$1"-"$2"-tmp_seq_nuc.mase "$1"-"$2"-tmp_seq_nuc.aln.mase "$1"-"$2"-tmp_seq_nuc.Ks "$1"-"$2"-tmp_seq_nuc.Ka "$1"-"$2"-tmp_Ks.log "$1"-"$2"-tmp_Ka.log "$1"-"$2"-tmp_aln.log
 
 

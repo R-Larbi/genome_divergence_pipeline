@@ -184,46 +184,47 @@ Names between [] are temporary and deleted during process.
 
 ```
 .
-+-- busco_downloads
++-- busco_downloads                          # BUSCO data for eukaryota 
 +-- data
 |   +-- assemblies
 |   |   +== {accession}
-|   |       +-- [genomic.fna]
-|   |       +-- [genomic.gff]
-|   |       +-- [genomic.faa]
-|   |       +-- genomic.fna.txt
+|   |       +-- [genomic.fna]                # Genomic fasta file
+|   |       +-- [genomic.gff]                # Annotation file (only if annotated)
+|   |       +-- [protein.faa]                # Protein fasta file (only if annotated)
+|   |       +-- url_genomic.fna.txt          # Download links to data
+|   +-- resources
+|       +-- [rooted_extraction]
+|       +-- organisms_data                    # Full data of organisms
+|       +== {partition}_organisms_data        # Partitioned data for processing on multiple machines
+|       +-- filtered_organisms_data           # Filtered data with all unclustered organisms removed
+|       +-- ncbi_eukaryota_dataset.taxonomy   # Taxonomy file for eukaryota
++-- results
+|   +== Clades/{clade}
+|   |   +-- dist.txt                          # Distance matrix
+|   |   +-- hr_dist.txt                       # Human-readable distance matrix
+|   |   +-- pair_list                         # List of paired organisms for alignment based on clusters
+|   |   +-- [species_pair]                    # Possible pairs in clade based on threshold
+|   |   +-- [clustered_species]               # Species with associated cluster
 |   +-- [KMC]
 |   +-- BUSCO
 |   |   +-- extracted_buscos
-|   |   |   +== {accession}-{busco id}.fasta
+|   |   |   +== {accession}-{busco id}.fasta  # Sequence for busco {busco id} and species {accession}
 |   |   +-- genome
 |   |   |   +== {accession}
 |   |   |       +-- run_eukaryota_odb12
 |   |   |           +-- busco_sequences
 |   |   |           |   +-- single_copy_busco_sequences
-|   |   |           |       +== {busco id}.gff
-|   |   |           +-- full_table.tsv
+|   |   |           |       +== {busco id}.gff # Busco annotation data
+|   |   |           +-- full_table.tsv         # Data table
 |   |   +-- protein
 |   |   |   +== {accession}
 |   |   |       +-- run_eukaryota_odb12
-|   |   |           +-- full_table.tsv
-|   |   +-- busco_full.fa
+|   |   |           +-- full_table.tsv         # Data table
+|   |   +-- busco_full.fa                      # All combined buscos in single file
 |   +-- minhash
 |   |   +-- hashlists
-|   |   |   +== {clade}_hashlist.txt
-|   |   +== kmc_{accession}.minhash.jac
-|   +-- resources
-|       +-- [rooted_extraction]
-|       +-- organism_data
-|       +== {partition}_organism_data
-|       +-- ncbi_eukaryota_dataset.taxonomy
-+-- results
-|   +== {clade}
-|   |   +-- dist.txt
-|   |   +-- hr_dist.txt
-|   |   +-- pair_list
-|   |   +-- [species_pair]
-|   |   +-- [clustered_species]
+|   |   |   +== Clades/{clade}_hashlist.txt           # List of all hash files for matrix generation
+|   |   +== kmc_{accession}.minhash.jac        # Hash files for matrix generation
 |   +-- total_pair_list
 |   +-- full_alignment.KaKs
 +-- scripts
@@ -232,9 +233,9 @@ Names between [] are temporary and deleted during process.
 |   |   |   +-- partition_organisms_data.py
 |   |   |   +-- xml_reader.py
 |   |   |   +-- xml_rewrite.py
-|   |   +-- config.json
-|   |   +-- data_dl.smk
-|   |   +-- fetch_data.smk
+|   |   +-- config.json                         # Defines query, number of partitions and max partition
+|   |   +-- data_dl.smk                         # Script 2
+|   |   +-- fetch_data.smk                      # Script 1
 |   +-- 2_analysis_pipeline
 |   |   +-- python
 |   |   |   +-- get_clade.py
@@ -243,10 +244,10 @@ Names between [] are temporary and deleted during process.
 |   |   |   +-- write_hashlist.py
 |   |   +-- Rscript
 |   |   |   +-- get_clusters.R
-|   |   +-- config.json
-|   |   +-- module_get_clade.smk
-|   |   +-- process_distance_matrix.smk
-|   |   +-- process_kmc.smk
+|   |   +-- config.json                          # Defines kmer count variables and memory usage
+|   |   +-- module_get_clade.smk                 # Script 4
+|   |   +-- process_distance_matrix.smk          # Script 5
+|   |   +-- process_kmc.smk                      # Script 3
 |   +-- 3_cds_extraction
 |   |   +-- python
 |   |   |   +-- extract_genomic_cds.py

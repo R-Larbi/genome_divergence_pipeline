@@ -8,7 +8,12 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-with open("data/resources/organisms_data") as reader:
+with open(pathResults + "list_species_to_process", "r") as reader:
+    PROCESS = [] # List of species to process
+    for line in reader.readlines():
+        PROCESS.append(line.strip())
+
+with open(pathResources + "filtered_organisms_data", "r") as reader:
     """
     Get the list of curated ones
     """
@@ -16,9 +21,10 @@ with open("data/resources/organisms_data") as reader:
     CURATED = [] # Assemblies with annotation and protein sequence
     for line in reader.readlines()[1:]:
         line_data = line.strip().split('\t')
-        if line_data[-1] != 'None' and line_data[3] == 'True': # if there is an existing URL and genome is curated
+        acc_trunc = line_data[2].strip().split(".")[0] # Get truncated accession number for comparison with PROCESS list
+        if line_data[-1] != 'None' and line_data[3] == 'True' and acc_trunc in PROCESS: # if there is an existing URL and genome is curated
                 CURATED.append(line_data[2])
-        elif line_data[-1] != 'None':
+        elif line_data[-1] != 'None' and acc_trunc in PROCESS:
                 UNCURATED.append(line_data[2])
 if CURATED == []:
         ACCESSNB = UNCURATED
@@ -46,5 +52,4 @@ rule concatenate_all_buscos:
     shell:
         """
         cat {pathBUSCO}extracted_buscos/*_all_buscos.fa > {pathBUSCO}busco_full.fa
-        rm {pathBUSCO}*_extraction_done.flag
         """

@@ -5,5 +5,6 @@
     "pathScripts": "/home/larbi/genome_divergence_pipeline/scripts/",
     "pathResults": "/home/larbi/genome_divergence_pipeline/results/",
     "pathKMC": "/home/larbi/genome_divergence_pipeline/data/KMC/",
-    "pathBUSCO": "/home/larbi/genome_divergence_pipeline/data/BUSCO/"
+    "pathBUSCO": "/home/larbi/genome_divergence_pipeline/results/BUSCO/",
+    "pathClades": "/home/larbi/genome_divergence_pipeline/results/clades/"
 }

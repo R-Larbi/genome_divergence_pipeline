@@ -27,7 +27,7 @@ FINAL = ACCESSNB
 
 def all_matrices(wildcards):
     clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
-    return expand(pathResults + "{clade}/dist.txt", clade=clades) + expand(pathResults + "{clade}/hr_dist.txt", clade=clades)
+    return expand(pathResults + "Clades/{clade}/dist.txt", clade=clades) + expand(pathResults + "Clades/{clade}/hr_dist.txt", clade=clades)
 
 rule all:
     """
@@ -43,7 +43,7 @@ rule get_matrix:
     input:
         hashlist = pathMinhash + "hashlists/{clade}_hashlist.txt"
     output:
-        matrix = pathResults + "{clade}/dist.txt"
+        matrix = pathResults + "Clades/{clade}/dist.txt"
     shell:
         """
         ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}/{wildcards.clade}
@@ -54,10 +54,10 @@ rule readable_matrix:
     Cleans the distance matrix and generates a readable matrix where all accession numbers are replaced by species name
     """
     input:
-        matrix = pathResults + "{clade}/dist.txt",
+        matrix = pathResults + "Clades/{clade}/dist.txt",
         info   = pathResources + "organisms_data"
     output:
-        hr_mat = pathResults + "{clade}/hr_dist.txt"
+        hr_mat = pathResults + "Clades/{clade}/hr_dist.txt"
     shell:
         """
         python3 {pathScripts}2_analysis_pipeline/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}

@@ -8,7 +8,12 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-with open("data/resources/organisms_data") as reader:
+with open(pathResults + "list_species_to_process", "r") as reader:
+    PROCESS = [] # List of species to process
+    for line in reader.readlines():
+        PROCESS.append(line.strip())
+
+with open(pathResources + "filtered_organisms_data", "r") as reader:
     """
     Get the list of curated ones
     """
@@ -16,9 +21,10 @@ with open("data/resources/organisms_data") as reader:
     CURATED = [] # Assemblies with annotation and protein sequence
     for line in reader.readlines()[1:]:
         line_data = line.strip().split('\t')
-        if line_data[-1] != 'None' and line_data[3] == 'True': # if there is an existing URL and genome is curated
+        acc_trunc = line_data[2].strip().split(".")[0] # Get truncated accession number for comparison with PROCESS list
+        if line_data[-1] != 'None' and line_data[3] == 'True' and acc_trunc in PROCESS: # if there is an existing URL and genome is curated
                 CURATED.append(line_data[2])
-        elif line_data[-1] != 'None':
+        elif line_data[-1] != 'None' and acc_trunc in PROCESS:
                 UNCURATED.append(line_data[2])
 if CURATED == []:
         ACCESSNB = UNCURATED
@@ -35,6 +41,7 @@ rule clean_isoforms:
     """
     Remove isoforms from a protein fasta
     """
+    priority: 1
     input:
         faa = pathAssemblies + "{accession}/protein.faa",
         gff = pathAssemblies + "{accession}/genomic.gff"
@@ -51,19 +58,21 @@ rule busco_protein:
     """
     Execute BUSCO on anottated data
     """
+    priority: 2
     input:
         faa = pathAssemblies + "{accession}/clean_protein.faa"
     output:
         table = pathBUSCO + "protein/{accession}/run_eukaryota_odb12/full_table.tsv"
     shell:
         """
-        busco -i {input} -f -m protein -l eukaryota_odb12 -c 1 -o data/BUSCO/protein/{wildcards.accession}
+        busco -i {input} -f -m protein -l eukaryota_odb12 -c 1 -o results/BUSCO/protein/{wildcards.accession}
         """
 
 rule extract_protein_ids:
     """
     Extract protein IDs for all BUSCO
     """
+    priority: 3
     input:
         table = pathBUSCO + "protein/{accession}/run_eukaryota_odb12/full_table.tsv"
     output:
@@ -77,6 +86,7 @@ rule busco_extract_protein:
     """
     Extract BUSCO sequences based on protein IDs
     """
+    priority: 4
     input:
         prots = pathBUSCO + "protein/{accession}/extracted_protein_ids",
         gff = pathAssemblies + "{accession}/genomic.gff",
@@ -99,7 +109,7 @@ rule busco_concatenate_protein:
         pathBUSCO + "extracted_buscos/{accession}_all_buscos.fa"
     shell:
         """
-        cat data/BUSCO/extracted_buscos/{wildcards.accession}_*.fasta > data/BUSCO/extracted_buscos/{wildcards.accession}_all_buscos.fa
+        cat {pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta > {pathBUSCO}extracted_buscos/{wildcards.accession}_all_buscos.fa
         """
 
 include: "module_get_fna.smk"

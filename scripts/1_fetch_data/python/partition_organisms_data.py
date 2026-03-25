@@ -15,17 +15,19 @@ and returns a truncated version which only keeps the nth tenth of organisms.
 This is to partition the workflow, allowing us to work on multiple machines at once.
 """
 
-fl = ""
-output = ""
+fl = "" # First line of organisms_data
+output = "" # Output species data
 
+## Max and current partition
 max_part = int(args.max_part)
 part = int(args.partition)
 
+# Opening organisms_data
 with open(args.input, "r") as reader:
     l  = reader.readlines()
     # We keep the first line as it is important for formatting
     fl = l[0]
-    rl = l[1:]
+    rl = l[1:] # Rest of lines
 
     # Getting the range to extract
     fract = float(len(rl) / max_part)

@@ -1,6 +1,6 @@
 import argparse
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="Script to clusterize species based on distance threshold")
 
 parser.add_argument("-i", "--input", required=True, type=str, help="Input pairwise distance matrix")
 parser.add_argument("-t", "--threshold", required=True, default=1.0, type=float, help="Distance threshold")

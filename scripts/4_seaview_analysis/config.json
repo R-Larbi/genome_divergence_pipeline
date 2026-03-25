@@ -1,3 +1,6 @@
 {
-    "threshold": 1.0
+    "threshold": 0.15,
+    "clade": "Viridiplantae",
+    "part": 1,
+    "max_part": 10
 }
