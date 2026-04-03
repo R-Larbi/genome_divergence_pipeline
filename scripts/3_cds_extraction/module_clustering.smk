@@ -42,7 +42,7 @@ rule pairs:
         """
         python3 {pathScripts}3_cds_extraction/python/cluster_species.py -i {input} -t {params.t} -o {output}
         """
-"""
+
 rule silixx:
     input:
         dist = pathResults + "Clades/{clade}/dist.txt",
@@ -50,10 +50,10 @@ rule silixx:
     output:
         pathResults + "Clades/{clade}/clustered_species"
     shell:
-        ""
+        """
         {pathScripts}3_cds_extraction/bash/run_silixx_all_clades.sh {input.dist} {input.pair} {output}
-        ""
-"""
+        """
+
 
 rule filter_clusters:
     """
@@ -77,7 +77,7 @@ rule filter_org_data:
         spec_list = pathResults + "list_species_to_process"
     shell:
         """
-        for i in {pathResults}*/filtered_clustered_species; do cat $i; done > {pathResults}cat_clustered_species
+        for i in {pathResults}Clades/*/filtered_clustered_species; do cat $i; done > {pathResults}cat_clustered_species
         awk -F '\t' '{{print $2}}' {pathResults}cat_clustered_species > {output.spec_list}
         python3 scripts/3_cds_extraction/python/filter_org_data.py -i {pathResults}cat_clustered_species -d {input.org_data} -o {output.filtered}
         rm {pathResults}cat_clustered_species

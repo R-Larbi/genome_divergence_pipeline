@@ -71,5 +71,6 @@ rule concatenate_pair_lists:
         pathResults + "total_pair_list"
     shell:
         """
-        cat {pathResults}*/pair_list > {output}
+        cat {pathResults}*/pair_list > {pathResults}pairs_step2
+        cat {pathResults}pairs_step1 {pathResults}pairs_step2 > {output}
         """

@@ -24,17 +24,26 @@ with open(pathResources + "filtered_organisms_data") as reader:
 
 FINAL = ACCESSNB
 
-with open(pathResults + "Clades/"+clade+"/cluster_pairs", "r") as reader:
+with open(pathResults + "Clades/"+clade+"/total_pairs_list", "r") as reader:
     """
     Creates the list of pairs to pass through seaview
     """
+    SPECIES_IN_CLADE = []
+    with open(pathResults + "list_phyla", "r") as phyl_read:
+        for phyl_data in phyl_read.readlines():
+            if phyl_data.strip().split("\t")[2] != clade:
+                continue
+            SPECIES_IN_CLADE.append(phyl_data.strip().split("\t")[1].split(".")[0])
+            
     PAIRS = []
     for line in reader.readlines():
+        if not (line.strip().split("\t")[0] in SPECIES_IN_CLADE or line.strip().split("\t")[1] in SPECIES_IN_CLADE):
+            continue
         PAIRS.append(line.strip())
 
 rule all:
     input:
-        pathResults + clade + "_full_alignment_summary.dNdS"
+        pathResults + "seaview_alignment/Alignment_Summaries/" + clade + "_full_alignment_summary.dNdS"
 
 rule separate_by_pair:
     """
@@ -74,7 +83,7 @@ rule seaview:
         busco = pathBUSCO + "busco_full.fa",
         db    = pathBUSCO + "busco_full.fa.ndb"
     output:
-        pathResults + "seaview_alignment/"+clade+"/Alignment_Results/{pair}/per_busco_alingment.dNdS"
+        pathResults + "seaview_alignment/Alignment_Results/{pair}/per_busco_alingment.dNdS"
     shell:
         """
         csh scripts/4_seaview_analysis/csh/Aln_dNdS_run_all.csh {input.pair} {input.busco} {wildcards.pair} 1 {output}
@@ -82,9 +91,9 @@ rule seaview:
 
 rule get_medians:
     input:
-        pathResults + "seaview_alignment/"+clade+"/Alignment_Results/{pair}/per_busco_alingment.dNdS"
+        pathResults + "seaview_alignment/Alignment_Results/{pair}/per_busco_alingment.dNdS"
     output:
-        pathResults + "seaview_alignment/"+clade+"/Alignment_Results/{pair}/full_alignment.dNdS"
+        pathResults + "seaview_alignment/Alignment_Results/{pair}/full_alignment.dNdS"
     shell:
         """
         python3 {pathScripts}4_seaview_analysis/python/median_dnds.py -i {input} -o {output}
@@ -92,10 +101,10 @@ rule get_medians:
 
 rule summarize:
     input:
-        expand(pathResults + "seaview_alignment/"+clade+"/Alignment_Results/{pair}/full_alignment.dNdS", pair = PAIRS)
+        expand(pathResults + "seaview_alignment/Alignment_Results/{pair}/full_alignment.dNdS", pair = PAIRS)
     output:
-        pathResults + clade + "_full_alignment_summary.dNdS"
+        pathResults + "seaview_alignment/Alignment_Summaries/" + clade + "_full_alignment_summary.dNdS"
     shell:
         """
-        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/{clade}/Alignment_Results/*/full_alignment.dNdS > {output}
+        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/Alignment_Results/*/full_alignment.dNdS > {output}
         """

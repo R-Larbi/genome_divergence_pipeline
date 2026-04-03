@@ -27,7 +27,7 @@ FINAL = ACCESSNB
 
 def all_matrices(wildcards):
     clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
-    return expand(pathResults + "Clades/{clade}/dist.txt", clade=clades) + expand(pathResults + "Clades/{clade}/hr_dist.txt", clade=clades)
+    return expand(pathResults + "Clades/{clade}/dist.txt", clade=clades) + expand(pathResults + "Clades/{clade}/hr_dist.txt", clade=clades) + expand(pathResults + "Clades/{clade}/representative", clade=clades)
 
 rule all:
     """
@@ -46,7 +46,7 @@ rule get_matrix:
         matrix = pathResults + "Clades/{clade}/dist.txt"
     shell:
         """
-        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}/{wildcards.clade}
+        mike dist -l {input} -L {input} -d {pathResults}Clades/{wildcards.clade}
         """
 
 rule readable_matrix:
@@ -61,4 +61,17 @@ rule readable_matrix:
     shell:
         """
         python3 {pathScripts}2_analysis_pipeline/python/hr_dist.py -d {input.matrix} -i {input.info} -o {output}
+        """
+
+rule get_representative:
+    """
+    Extract representative species for each clade to be compared with other clades
+    """
+    input:
+        matrix = pathResults + "Clades/{clade}/dist.txt"
+    output:
+        rep = pathResults + "Clades/{clade}/representative"
+    shell:
+        """
+        Rscript {pathScripts}2_analysis_pipeline/Rscript/get_representatives.R {input.matrix} {output.rep}
         """

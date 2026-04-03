@@ -59,9 +59,10 @@ checkpoint write_hashlist:
         acc_list = pathMinhash + "accession_list.txt",
         tax = pathResources + "ncbi_dataset_eukaryota.taxonomy"
     output:
-        hashlist = directory(pathMinhash + "hashlists")
+        hashlist = directory(pathMinhash + "hashlists"),
+        phyllist = pathResults + "list_phyla"
     shell:
         """
         mkdir -p data/minhash/hashlists
-        Rscript {pathScripts}2_analysis_pipeline/Rscript/get_clusters.R {input.tax} {input.acc_list}
+        Rscript {pathScripts}2_analysis_pipeline/Rscript/get_clusters.R {input.tax} {input.acc_list} {output.phyllist}
         """
