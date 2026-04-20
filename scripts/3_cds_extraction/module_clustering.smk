@@ -23,9 +23,17 @@ with open(pathResources + "organisms_data") as reader:
 
 FINAL = ACCESSNB
 
+def get_clades_dist(wildcards):
+    clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
+    return expand(pathResults + "Clades/{clade}/dist.txt", clade=clades)
+
 def get_clades_clusters(wildcards):
     clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
     return expand(pathResults + "Clades/{clade}/filtered_clustered_species", clade=clades)
+
+def get_clades_pair_lists(wildcards):
+    clades = [Path(x).stem.split("_")[0] for x in glob.glob(pathMinhash + f"hashlists/*_hashlist.txt")]
+    return expand(pathResults + "Clades/{clade}/species_pairs", clade=clades)
 
 rule all:
     input:
@@ -43,6 +51,17 @@ rule pairs:
         python3 {pathScripts}3_cds_extraction/python/cluster_species.py -i {input} -t {params.t} -o {output}
         """
 
+rule concatenate_pair_lists:
+    input:
+        get_clades_pair_lists
+    output:
+        pathResults + "total_pair_list"
+    shell:
+        """
+        cat {pathResults}Clades/*/species_pairs > {pathResults}pairs_step2
+        cat {pathResults}pairs_step1 {pathResults}pairs_step2 > {output}
+        """
+
 rule silixx:
     input:
         dist = pathResults + "Clades/{clade}/dist.txt",
@@ -51,7 +70,23 @@ rule silixx:
         pathResults + "Clades/{clade}/clustered_species"
     shell:
         """
-        {pathScripts}3_cds_extraction/bash/run_silixx_all_clades.sh {input.dist} {input.pair} {output}
+        silixx $(($(wc -l < {input.dist})-1)) {input.pair} > {output}
+        """
+
+rule silixx_full:
+    input:
+        dist = get_clades_dist,
+        pair = pathResults + "total_pair_list"
+    output:
+        pathResults + "full_clustered_species"
+    shell:
+        """
+        for file in {pathResults}Clades/*/dist.txt;
+        do
+            tail -n+2 "$file"
+        done > {pathResults}full_dist.txt
+        silixx $(($(wc -l < {pathResults}full_dist.txt))) {input.pair} > {output}
+        rm {pathResults}full_dist.txt
         """
 
 
@@ -60,9 +95,9 @@ rule filter_clusters:
     Removes all species which do not share a cluster with any other
     """
     input:
-        pathResults + "Clades/{clade}/clustered_species"
+        pathResults + "full_clustered_species"
     output:
-        pathResults + "Clades/{clade}/filtered_clustered_species"
+        pathResults + "filtered_clustered_species"
     shell:
         """
         python3 {pathScripts}3_cds_extraction/python/filter_clusters.py -i {input} -o {output}
@@ -70,15 +105,13 @@ rule filter_clusters:
 
 rule filter_org_data:
     input:
-        get_clades_clusters,
+        clust = pathResults + "filtered_clustered_species",
         org_data = pathResources + "organisms_data"
     output:
         filtered = pathResources + "filtered_organisms_data",
         spec_list = pathResults + "list_species_to_process"
     shell:
         """
-        for i in {pathResults}Clades/*/filtered_clustered_species; do cat $i; done > {pathResults}cat_clustered_species
-        awk -F '\t' '{{print $2}}' {pathResults}cat_clustered_species > {output.spec_list}
-        python3 scripts/3_cds_extraction/python/filter_org_data.py -i {pathResults}cat_clustered_species -d {input.org_data} -o {output.filtered}
-        rm {pathResults}cat_clustered_species
+        awk -F '\t' '{{print $2}}' {input.clust} > {output.spec_list}
+        python3 scripts/3_cds_extraction/python/filter_org_data.py -i {input.clust} -d {input.org_data} -o {output.filtered}
         """

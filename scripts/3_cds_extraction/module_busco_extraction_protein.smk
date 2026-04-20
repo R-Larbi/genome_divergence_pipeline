@@ -65,7 +65,7 @@ rule busco_protein:
         table = pathBUSCO + "protein/{accession}/run_eukaryota_odb12/full_table.tsv"
     shell:
         """
-        busco -i {input} -f -m protein -l eukaryota_odb12 -c 1 -o results/BUSCO/protein/{wildcards.accession}
+        busco -i {input} -f --offline --download_path ./busco_downloads -m protein -l eukaryota_odb12 -c 1 -o results/BUSCO/protein/{wildcards.accession}
         """
 
 rule extract_protein_ids:
@@ -90,28 +90,33 @@ rule busco_extract_protein:
     input:
         prots = pathBUSCO + "protein/{accession}/extracted_protein_ids",
         gff = pathAssemblies + "{accession}/genomic.gff",
-        fna = pathAssemblies + "{accession}/genomic.fna"
-    output:
-        touch(pathBUSCO + "{accession}_extraction_done.flag")
-    shell:
-        """
-        mkdir -p {pathBUSCO}extracted_buscos/
-        python3 scripts/3_cds_extraction/python/extract_protein_cds.py -p {input.prots} -f {input.fna} -g {input.gff} -o {pathBUSCO}extracted_buscos -a {wildcards.accession}
-        """
-
-rule busco_concatenate_protein:
-    """
-    Concatenate all BUSCOs into a single file
-    """
-    input:
-        pathBUSCO + "{accession}_extraction_done.flag"
+        fna = pathBank + "{accession}/genomic.fna.gz"
     output:
         pathBUSCO + "extracted_buscos/{accession}_all_buscos.fa"
     shell:
         """
+        mkdir -p {pathBUSCO}extracted_buscos/
+        gunzip -c {input.fna} > {pathAssemblies}{wildcards.accession}/genomic.fna
+        python3 scripts/3_cds_extraction/python/extract_protein_cds.py -p {input.prots} -f {pathAssemblies}{wildcards.accession}/genomic.fna -g {input.gff} -o {pathBUSCO}extracted_buscos -a {wildcards.accession}
+        rm {pathAssemblies}{wildcards.accession}/genomic.fna
         cat {pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta > {pathBUSCO}extracted_buscos/{wildcards.accession}_all_buscos.fa
         """
 
-include: "module_get_fna.smk"
+"""
+rule busco_concatenate_protein:
+    ""
+    Concatenate all BUSCOs into a single file
+    ""
+    input:
+        pathBUSCO + "flags/{accession}_extraction_done.flag"
+    output:
+        pathBUSCO + "extracted_buscos/{accession}_all_buscos.fa"
+    shell:
+        ""
+        cat {pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta > {pathBUSCO}extracted_buscos/{wildcards.accession}_all_buscos.fa
+        ""
+"""
+
+#include: "module_get_fna.smk"
 include: "module_get_faa.smk"
 include: "module_get_gff.smk"

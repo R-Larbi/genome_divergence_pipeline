@@ -137,7 +137,7 @@ rule sketch:
     priority: 5
     shell:
         """
-         mike sketch -t 1 -l {input.filelist} -d data/minhash
+         ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 ########### MOVED TO PROCESS_DISTANCE_MATRIX ################
@@ -165,7 +165,7 @@ rule sketch:
 #        matrix = pathResults + "dist.txt"
 #    shell:
 #        """
-#        mike dist -l {input} -L {input} -d {pathResults}
+#        ~/MIKE/src/mike dist -l {input} -L {input} -d {pathResults}
 #        """
 
 #rule readable_matrix:

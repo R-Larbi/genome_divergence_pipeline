@@ -29,6 +29,17 @@ rule all:
     input:
         pathResults + "full_list"
 
+rule separate_clusters_by_clade:
+    input:
+        clust = pathResults + "filtered_clustered_species",
+        phyla = pathResults + "list_phyla"
+    output:
+        pathResults + "Clades/{clade}/clustered_species"
+    shell:
+        """
+        python3 {pathScripts}4_seaview_analysis/python/separate_clusters_by_clade.py -f {input.clust} -p {input.phyla} -c {wildcards.clade} -o {output}
+        """
+
 rule create_pair_list:
     input:
         clust = pathResults + "Clades/{clade}/clustered_species",
