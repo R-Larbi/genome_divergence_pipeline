@@ -77,6 +77,44 @@ rule make_blast_db:
         makeblastdb -in {input.busco} -dbtype nucl -parse_seqids
         """
 
+def get_gen_codes(wildcards):
+    """
+    Takes in the pair and returns the genetic code to use in seaview for each species of the pair
+    """
+
+    pair = wildcards.pair
+
+    spec1 = pair.strip().split("-")[0]
+    spec2 = pair.strip().split("-")[1]
+
+    tax1 = ""
+    tax2 = ""
+
+    code1 = ""
+    code2 = ""
+
+    with open(pathResources + "filtered_organisms_data", "r") as reader:
+        for line in reader.readlines():
+            splitline = line.strip().split("\t")
+            if spec1 in splitline[2]:
+                tax1 = splitline[1]
+            if spec2 in splitline[2]:
+                tax2 = splitline[1]
+            if spec1 != "" and spec2 != "":
+                break
+    
+    with open(pathResources + "nodes.dmp", "r") as reader:
+        for line in reader.readlines():
+            splitline = line.strip().split("\t|\t")
+            if tax1 in splitline[0]:
+                code1 = splitline[6]
+            if tax2 in splitline[0]:
+                code2 = splitline[6]
+            if code1 != "" and code2 != "":
+                break
+    
+    return [code1, code2]
+
 rule seaview:
     input:
         pair  = pathResults + "seaview_alignment/"+clade+"/{pair}/busco_pairs",
@@ -84,6 +122,9 @@ rule seaview:
         db    = pathBUSCO + "busco_full.fa.ndb"
     output:
         pathResults + "seaview_alignment/Alignment_Results/{pair}/per_busco_alingment.dNdS"
+    params:
+        code1 = get_gen_codes[0]
+        code2 = get_gen_codes[1]
     shell:
         """
         csh scripts/4_seaview_analysis/csh/Aln_dNdS_run_all.csh {input.pair} {input.busco} {wildcards.pair} 1 {output}

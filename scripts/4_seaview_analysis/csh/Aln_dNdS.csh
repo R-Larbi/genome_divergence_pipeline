@@ -1,18 +1,19 @@
 
 set seaview = "/home/larbi/seaview5-64/seaview/seaview"
 
-if ($5 == "") then
+if ($6 == "") then
    echo  " "
    echo "$0 : extract CDS sequences SEQ1 SEQ2 from BLASTDB , align them at protein level, compute dN and dS "
-   echo "Usage: $0 SEQ1 SEQ2 BLASTDB genetic_code outfile"
+   echo "Usage: $0 SEQ1 SEQ2 BLASTDB genetic_code_1 genetic_code_2 outfile"
    exit
 endif
 
 set SEQ1 = $1
 set SEQ2 = $2
 set BLASTDB = $3
-set genetic_code = $4
-set outfile = $5
+set genetic_code_1 = $4
+set genetic_code_2 = $5
+set outfile = $6
 
 # Empty files
 echo "" > "$1"-"$2"-tmp_seq_nuc.Ka
@@ -39,9 +40,9 @@ endif
 
 # Prepare MASE file (with information on genetic code)
 echo ";; " > "$1"-"$2"-tmp_seq_nuc.mase
-echo ";/transl_table=$genetic_code" >> "$1"-"$2"-tmp_seq_nuc.mase
+echo ";/transl_table=$genetic_code_1" >> "$1"-"$2"-tmp_seq_nuc.mase
 cut -f1 -d" " "$1"-"$2"-tmp_seq_nuc1.fa | sed "s/>//g" >> "$1"-"$2"-tmp_seq_nuc.mase
-echo ";/transl_table=$genetic_code" >> "$1"-"$2"-tmp_seq_nuc.mase
+echo ";/transl_table=$genetic_code_2" >> "$1"-"$2"-tmp_seq_nuc.mase
 cut -f1 -d" " "$1"-"$2"-tmp_seq_nuc2.fa  |cut -f1 -d" " | sed "s/>//g" >> "$1"-"$2"-tmp_seq_nuc.mase
 
 # Align MASE file

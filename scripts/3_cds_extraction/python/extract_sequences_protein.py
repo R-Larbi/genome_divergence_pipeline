@@ -10,9 +10,11 @@ args = parser.parse_args()
 
 """
 Script that takes the output table of a BUSCO execution and returns a list of IDs of non-duplicate sequences.
+Also adds all duplicated BUSCO genes into a file for later filtering.
 """
 
 output = []
+multi  = []
 
 with open(args.input, "r") as reader:
     l = reader.readlines()[3:]
@@ -20,11 +22,12 @@ with open(args.input, "r") as reader:
         splitted = line.strip().split("\t")
 
         status = splitted[1]
-        if status != "Complete":
+        if status != "Complete" and status != "Duplicated":
             continue
         seq   = splitted[2]
         busco = splitted[0]
-
+        if status == "Duplicated":
+            multi.append(busco)
         output.append([seq, busco])
 
 with open(args.output, "w") as writer:
@@ -33,3 +36,8 @@ with open(args.output, "w") as writer:
         if s is not output[-1]:
             writer.write("\n")
 
+if multi != []:
+    multi_list = "/".join(args.output.split('/')[:-1]) + "/multi_copy_buscos"
+    with open(multi_list, "w") as writer:
+        for b in multi:
+            writer.write(b+"\n")

@@ -70,8 +70,13 @@ rule concatenate_gffs_genomic:
         """
         if ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff; then
             find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; > {output}
-        else
-            touch {output}
+        fi
+        if ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff; then
+            find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; >> {output}
+            for p in $(ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff);
+            do
+                echo $(basename $p) >> {pathBUSCO}genomic/{wildcards.accession}/multi_copy_buscos
+            done
         fi
         rm {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi
         """

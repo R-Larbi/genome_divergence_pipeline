@@ -10,8 +10,9 @@ endif
 
 set BLASTDB = $2
 set pairing = $3
-set genetic_code = $4
-set outfile = $5
+set genetic_code_1 = $4
+set genetic_code_2 = $5
+set outfile = $6
 #set path_script = "./scripts/4_seaview_analysis/csh/Aln_dNdS.csh"
 set path_script = "../genome_divergence_pipeline/scripts/4_seaview_analysis/csh/Aln_dNdS.csh"
 
@@ -37,7 +38,7 @@ echo ""
 echo "##################################"
 echo $num $buf
 
-csh $path_script $buf $BLASTDB $genetic_code "$pairing"_tmp_KaKs
+csh $path_script $buf $BLASTDB $genetic_code_1 $genetic_code_2 "$pairing"_tmp_KaKs
 cat "$pairing"_tmp_KaKs >> $outfile
 \rm "$pairing"_tmp_KaKs
 
