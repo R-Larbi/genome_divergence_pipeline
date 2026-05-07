@@ -2,7 +2,7 @@ import json
 import glob
 
 configfile: "scripts/4_seaview_analysis/config.json"
-clade = config["clade"]
+cluster = str(config["cluster"])
 
 # Function to load JSON files
 def load_json(file_path):
@@ -30,26 +30,18 @@ with open(pathResources + "filtered_organisms_data") as reader:
 
 FINAL = ACCESSNB
 
-with open(pathResults + "/total_pairs_list", "r") as reader:
+with open(pathResults + "Cluster_BUSCO_pairs/pairs_cluster_" + cluster, "r") as reader:
     """
     Creates the list of pairs to pass through seaview
     """
-    SPECIES_IN_CLADE = []
-    with open(pathResults + "list_phyla", "r") as phyl_read:
-        for phyl_data in phyl_read.readlines():
-            if phyl_data.strip().split("\t")[2] != clade:
-                continue
-            SPECIES_IN_CLADE.append(phyl_data.strip().split("\t")[1].split(".")[0])
-            
     PAIRS = []
     for line in reader.readlines():
-        if not (line.strip().split("\t")[0] in SPECIES_IN_CLADE or line.strip().split("\t")[1] in SPECIES_IN_CLADE):
-            continue
-        PAIRS.append("-".join(line.strip().split("\t")))
+        if line.strip() not in PAIRS:
+            PAIRS.append(line.strip())
 
 rule all:
     input:
-        pathResults + "seaview_alignment/Alignment_Summaries/" + clade + "_full_alignment_summary.dNdS"
+        pathResults + "seaview_alignment/Alignment_Summaries/cluster_" + cluster + "_full_alignment_summary.dNdS"
 
 rule separate_by_pair:
     """
@@ -58,11 +50,11 @@ rule separate_by_pair:
     We want it to only run the rule for missing pairs, so we only specify the output so it only checks for missing pairs.
     """
     output:
-        pathResults + "seaview_alignment/"+clade+"/{pair}/busco_pairs"
+        pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/busco_pairs"
     shell:
         """
-        mkdir -p {pathResults}seaview_alignment/{clade}/{wildcards.pair}
-        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Clades/{clade}/busco_pairs -o {pathResults}seaview_alignment/{clade}/{wildcards.pair}/busco_pairs
+        mkdir -p {pathResults}seaview_alignment/Per_BUSCO_Alignments/{wildcards.pair}
+        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Cluster_BUSCO_pairs/busco_cluster_{cluster} -o {output}
         """
 
 """
@@ -123,11 +115,11 @@ def get_gen_codes(wildcards):
 
 rule seaview:
     input:
-        pair  = pathResults + "seaview_alignment/"+clade+"/{pair}/busco_pairs",
+        pair  = pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/busco_pairs",
         busco = pathBUSCO + "busco_full.fa",
         db    = pathBUSCO + "busco_full.fa.ndb"
     output:
-        pathResults + "seaview_alignment/Alignment_Results/{pair}/per_busco_alingment.dNdS"
+        pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/per_busco_alignment.dNdS"
     params:
         codes = get_gen_codes
     shell:
@@ -137,9 +129,9 @@ rule seaview:
 
 rule get_medians:
     input:
-        pathResults + "seaview_alignment/Alignment_Results/{pair}/per_busco_alingment.dNdS"
+        pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/per_busco_alignment.dNdS"
     output:
-        pathResults + "seaview_alignment/Alignment_Results/{pair}/full_alignment.dNdS"
+        pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS"
     shell:
         """
         python3 {pathScripts}4_seaview_analysis/python/median_dnds.py -i {input} -o {output}
@@ -147,10 +139,10 @@ rule get_medians:
 
 rule summarize:
     input:
-        expand(pathResults + "seaview_alignment/Alignment_Results/{pair}/full_alignment.dNdS", pair = PAIRS)
+        expand(pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS", pair = PAIRS)
     output:
-        pathResults + "seaview_alignment/Alignment_Summaries/" + clade + "_full_alignment_summary.dNdS"
+        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
     shell:
         """
-        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/Alignment_Results/*/full_alignment.dNdS > {output}
+        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/Per_BUSCO_Alignments/*/full_alignment.dNdS > {output}
         """

@@ -9,6 +9,11 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
+with open(pathResults + "list_species_to_process", "r") as reader:
+    PROCESS = [] # List of species to process
+    for line in reader.readlines():
+        PROCESS.append(line.strip())
+
 with open(pathResources + "filtered_organisms_data") as reader:
     """
     Creates the list of accession numbers
@@ -16,7 +21,8 @@ with open(pathResources + "filtered_organisms_data") as reader:
     ACCESSNB = []
     for line in reader.readlines()[1:]:
         line_data = line.strip().split('\t')
-        if line_data[-1] != 'None': # if there is an existing URL
+        acc_trunc = line_data[2].strip().split(".")[0] # Get truncated accession number for comparison with PROCESS list
+        if line_data[-1] != 'None' and acc_trunc in PROCESS: # if there is an existing URL
             ACCESSNB.append(line_data[2])
 
 FINAL = ACCESSNB
@@ -45,11 +51,10 @@ rule create_pair_list:
         clust = pathResults + "Clades/{clade}/clustered_species",
         busco = pathBUSCO + "busco_full.fa"
     output:
-        pathResults + "Clades/{clade}/busco_pairs",
-        pathResults + "Clades/{clade}/cluster_pairs"
+        pathResults + "Cluster_BUSCO_pairs/busco_cluster_{cluster}"
     shell:
         """
-        python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -b {input.busco} -c {input.clust} -o {pathResults}Clades/{wildcards.clade}/
+        python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -b {input.busco} -c {input.clust} -o {pathResults}Cluster_BUSCO_pairs/
         """
 
 rule full_list:

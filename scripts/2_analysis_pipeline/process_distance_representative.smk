@@ -100,7 +100,7 @@ rule comparison_per_clade:
         t = config["threshold"]
     shell:
         """
-        mkdir {pathResults}Clades/{wildcards.clade}/tmp_comp
+        mkdir -p {pathResults}Clades/{wildcards.clade}/tmp_comp
         echo {pathMinhash}kmc_"$(cat {input.rep})".minhash.jac > {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_1
         while read c; do
             echo {pathMinhash}kmc_"$c".minhash.jac
