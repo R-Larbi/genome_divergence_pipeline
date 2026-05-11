@@ -41,7 +41,7 @@ with open(pathResults + "Cluster_BUSCO_pairs/pairs_cluster_" + cluster, "r") as 
 
 rule all:
     input:
-        pathResults + "seaview_alignment/Alignment_Summaries/cluster_" + cluster + "_full_alignment_summary.dNdS"
+        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
 
 rule separate_by_pair:
     """
