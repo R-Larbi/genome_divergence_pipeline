@@ -9,8 +9,10 @@ if ($4 == "") then
 endif
 
 set BLASTDB = $2
-set genetic_code = $3
-set outfile = $4
+set pairing = $3
+set genetic_code_1 = $4
+set genetic_code_2 = $5
+set outfile = $6
 #set path_script = "./scripts/4_seaview_analysis/csh/Aln_dNdS.csh"
 set path_script = "../genome_divergence_pipeline/scripts/4_seaview_analysis/csh/Aln_dNdS.csh"
 
@@ -36,9 +38,9 @@ echo ""
 echo "##################################"
 echo $num $buf
 
-csh $path_script $buf $BLASTDB $genetic_code tmp_KaKs
-cat tmp_KaKs >> $outfile
-\rm tmp_KaKs
+csh $path_script $buf $BLASTDB $genetic_code_1 $genetic_code_2 /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs
+cat /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs >> $outfile
+\rm /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs
 
 end
 

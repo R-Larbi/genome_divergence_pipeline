@@ -26,6 +26,7 @@ def processGff(gff:str):
             data  = splitted[8]
             flag_gene = 0
             flag_prot = 0
+            flag_hypo = 0
             flag = 0
             last_prot = ""
             prot_length = 0
@@ -80,6 +81,21 @@ def processGff(gff:str):
                         if ref[0] == "locus_tag" :
                             cds_gene_id = ref[1]
                             flag_gene = 1
+                if flag_gene == 0 :
+                    print(f"debug3 {data.split(';')}\n{splitted}")
+                if flag_prot == 0 :
+                    xrefs = data.split(';')
+                    for xref in xrefs:
+                        ref=xref.split('=')
+                        if ref[1] == "hypothetical protein":
+                            flag_hypo = 1
+                if flag_hypo == 1:
+                    print(f"Hypothetical protein CDS skipped for gene {cds_gene_id}")
+                    continue
+                if flag_prot == 0 :
+                    print(f"debug4 {data.split(';')}\n{splitted}")
+                    print(f"No prot name found for CDS of gene {cds_gene_id}: skipping")
+                    continue
                 if not cds_gene_id in gene_dict.keys():
                     print(f"Error: not {cds_gene_id} in known genes\nData: {xrefs}")
                     continue

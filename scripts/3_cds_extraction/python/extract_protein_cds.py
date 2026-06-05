@@ -111,7 +111,7 @@ if not os.path.exists(args.output):
 
 for busco in out_dict.keys():
     with open(args.output + args.accession + "_" + busco +".fasta", "w") as writer:
-        writer.write(f">{busco}-{args.accession}\t{out_dict[busco]["chr"]}\tPROT_ID:{out_dict[busco]["prot"]}\n")
+        writer.write(f">{busco}-{args.accession}\t{out_dict[busco]['chr']}\tPROT_ID:{out_dict[busco]['prot']}\n")
         for i in range(len(out_dict[busco]["seq"])):
             writer.write(out_dict[busco]["seq"][i])
 # Line break every 60 characters, with also a check that this isn't the last character in the sequence.

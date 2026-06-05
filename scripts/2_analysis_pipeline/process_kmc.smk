@@ -62,6 +62,7 @@ rule get_fna:
         wget -q -i {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt -O {pathAssemblies}{wildcards.accession}/genomic.fna.gz
         """
 
+
 rule process_kmc:
     """
     Execute kmc on each genome
@@ -136,7 +137,7 @@ rule sketch:
     priority: 5
     shell:
         """
-        mike sketch -t 1 -l {input.filelist} -d data/minhash
+         mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 ########### MOVED TO PROCESS_DISTANCE_MATRIX ################

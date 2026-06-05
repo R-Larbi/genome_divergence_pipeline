@@ -13,7 +13,7 @@ globals().update(load_json("scripts/environment_path.json"))
 part = str(config["partition"])
 temp_path = "/home/larbi/virtual_machine_assemblies/assemblies/"
 
-with open(pathResources + part + "_organisms_data") as reader:
+with open("/home/larbi/remaining_organisms_data") as reader:
     """
     Creates the list of URL that will be used for download
     """
@@ -36,9 +36,9 @@ PATHLIST = dict(zip(FINAL, PATHLIST))
 
 rule all:
     input: 
-        expand(pathAssemblies + "{accession}/url_protein.faa.txt", accession=CURATED),
-        expand(pathAssemblies + "{accession}/url_genomic.fna.txt", accession=FINAL),
-        expand(pathAssemblies + "{accession}/url_genomic.gff.txt", accession=CURATED)
+        expand(temp_path + "{accession}/url_protein.faa.txt", accession=CURATED),
+        expand(temp_path + "{accession}/url_genomic.fna.txt", accession=FINAL),
+        expand(temp_path + "{accession}/url_genomic.gff.txt", accession=CURATED)
 
 def GetPath(wildcards):
     return(PATHLIST[wildcards.accession])
@@ -47,34 +47,34 @@ rule download_protein_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        "/home/larbi/remaining_organisms_data"
     output:
-        pathAssemblies + "{accession}/url_protein.faa.txt"
+        temp_path + "{accession}/url_protein.faa.txt"
     shell:
         """
-        echo {params.http_path}_protein.faa.gz > {pathAssemblies}{wildcards.accession}/url_protein.faa.txt
+        echo {params.http_path}_protein.faa.gz > {temp_path}{wildcards.accession}/url_protein.faa.txt
         """
 
 rule download_genomic_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        "/home/larbi/remaining_organisms_data"
     output:
-        pathAssemblies + "{accession}/url_genomic.fna.txt"
+        temp_path + "{accession}/url_genomic.fna.txt"
     shell:
         """
-        echo {params.http_path}_genomic.fna.gz > {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt
+        echo {params.http_path}_genomic.fna.gz > {temp_path}{wildcards.accession}/url_genomic.fna.txt
         """
 
 rule download_annotation_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        "/home/larbi/remaining_organisms_data"
     output:
-        pathAssemblies + "{accession}/url_genomic.gff.txt"
+        temp_path + "{accession}/url_genomic.gff.txt"
     shell:
         """
-        echo {params.http_path}_genomic.gff.gz > {pathAssemblies}{wildcards.accession}/url_genomic.gff.txt
+        echo {params.http_path}_genomic.gff.gz > {temp_path}{wildcards.accession}/url_genomic.gff.txt
         """

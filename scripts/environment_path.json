@@ -5,5 +5,7 @@
     "pathScripts": "/path/to/genome_divergence_pipeline/scripts/",
     "pathResults": "/path/to/genome_divergence_pipeline/results/",
     "pathKMC": "/path/to/genome_divergence_pipeline/data/KMC/",
-    "pathBUSCO": "/path/to/genome_divergence_pipeline/data/BUSCO/"
+    "pathBUSCO": "/path/to/genome_divergence_pipeline/results/BUSCO/",
+    "pathClades": "/path/to/genome_divergence_pipeline/results/clades/",
+    "pathBank": "/ceph/banques/EvoDrivers/assemblies/"
 }

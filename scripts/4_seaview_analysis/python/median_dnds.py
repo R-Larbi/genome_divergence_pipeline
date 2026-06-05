@@ -14,6 +14,12 @@ def get_pairs(data: str):
             splitline = line.strip().split(" ")
             seq1 = splitline[0].strip().split("-")[1]
             seq2 = splitline[1].strip().split("-")[1]
+            if splitline[2] == "NA" or splitline[3] == "NA":
+                continue
+            if splitline[2] == '':
+                splitline[2] = 0
+            if splitline[3] == '':
+                splitline[3] = 0
             dn   = float(splitline[2])
             ds   = float(splitline[3])
 
@@ -48,17 +54,23 @@ for key in pair_dict.keys():
     median_dn = compute_median(dn)
     median_ds = compute_median(ds)
 
-    if median_ds == 0:
-        dn_ds = 0.
-    else:
-        dn_ds = median_dn/median_ds
+    dn_ds = []
+    for i in range(len(dn)):
+        if ds[i] == 0:
+            dn_ds.append(0)
+        else:
+            dn_ds.append(dn[i]/ds[i])
+    dn_ds = sorted(dn_ds)
+
+    median_dn_ds = compute_median(dn_ds)
 
     list_in.append(median_dn)
     list_in.append(median_ds)
-    list_in.append(dn_ds)
+    list_in.append(median_dn_ds)
+    list_in.append(len(dn))
     out_list.append(list_in)
 
 with open(args.output, "w") as writer:
-    writer.write("Species 1\tSpecies 2\tmedian dN\tmedian dS\tmedian dN/dS\n")
+    writer.write("Species 1\tSpecies 2\tmedian dN\tmedian dS\tmedian dN/dS\tnb busco genes\n")
     for pair in out_list:
-        writer.write(f"{pair[0]}\t{pair[1]}\t{pair[2]}\t{pair[3]}\t{pair[4]}\n")
+        writer.write(f"{pair[0]}\t{pair[1]}\t{pair[2]}\t{pair[3]}\t{pair[4]}\t{pair[5]}\n")
