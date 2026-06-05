@@ -1,6 +1,6 @@
 {
     "threshold": 0.15,
     "cluster": 0,
-    "part": 1,
+    "partition": 1,
     "max_part": 10
 }

@@ -79,7 +79,7 @@ rule comparison_per_clade:
         mkdir {pathResults}Clades/{wildcards.clade}/tmp_comp
         while read c; do
             echo {pathMinhash}kmc_"$(cat {input.rep})".minhash.jac\n{pathMinhash}kmc_"$c".minhash.jac > tmp_pair_"$c".txt
-            ~/MIKE/src/mike dist -l tmp_pair_"$c".txt -L tmp_pair_"$c".txt -d {pathResults}Clades/{wildcards.clade}/tmp_comp
+            mike dist -l tmp_pair_"$c".txt -L tmp_pair_"$c".txt -d {pathResults}Clades/{wildcards.clade}/tmp_comp
             python3 {pathScripts}2_analysis_pipeline/python/threshold_check.py -d {pathResults}Clades/{wildcards.clade}/tmp_comp/dist.txt -p {output}
             rm {pathResults}Clades/{wildcards.clade}/tmp_comp/dist.txt
         done < {input.comp}
@@ -106,7 +106,7 @@ rule comparison_per_clade:
             echo {pathMinhash}kmc_"$c".minhash.jac
         done < {input.comp} > {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_2
         if ! test -f {pathResults}Clades/{wildcards.clade}/phylum.flag; then
-            ~/MIKE/src/mike dist -l {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_1 -L {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_2 -d {pathResults}Clades/{wildcards.clade}/tmp_comp
+            mike dist -l {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_1 -L {pathResults}Clades/{wildcards.clade}/tmp_comp/tmp_hashlist_2 -d {pathResults}Clades/{wildcards.clade}/tmp_comp
             python3 {pathScripts}2_analysis_pipeline/python/threshold_check.py -d {pathResults}Clades/{wildcards.clade}/tmp_comp/dist.txt -p {output} -t {params.t}
         else
             rm {pathResults}Clades/{wildcards.clade}/phylum.flag

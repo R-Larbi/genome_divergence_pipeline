@@ -14,6 +14,12 @@ def get_pairs(data: str):
             splitline = line.strip().split(" ")
             seq1 = splitline[0].strip().split("-")[1]
             seq2 = splitline[1].strip().split("-")[1]
+            if splitline[2] == "NA" or splitline[3] == "NA":
+                continue
+            if splitline[2] == '':
+                splitline[2] = 0
+            if splitline[3] == '':
+                splitline[3] = 0
             dn   = float(splitline[2])
             ds   = float(splitline[3])
 

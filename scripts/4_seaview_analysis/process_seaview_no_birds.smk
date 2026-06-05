@@ -2,7 +2,7 @@ import json
 import glob
 
 configfile: "scripts/4_seaview_analysis/config.json"
-cluster  = str(config["cluster"])
+
 part     = config["partition"]
 max_part = config["max_part"]
 
@@ -33,7 +33,7 @@ with open(pathResources + "filtered_organisms_data") as reader:
 
 FINAL = ACCESSNB
 
-with open(pathResults + "Cluster_BUSCO_pairs/pairs_cluster_" + cluster, "r") as reader:
+with open(pathResults + "Cluster_BUSCO_pairs/full_pair_list", "r") as reader:
     """
     Creates the batch of pairs to pass through seaview
     """
@@ -62,7 +62,7 @@ for line in part_pairs:
 
 rule all:
     input:
-        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
+        expand(pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS", pair = PAIRS)
 
 rule separate_by_pair:
     """
@@ -75,7 +75,7 @@ rule separate_by_pair:
     shell:
         """
         mkdir -p {pathResults}seaview_alignment/Per_BUSCO_Alignments/{wildcards.pair}
-        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Cluster_BUSCO_pairs/busco_cluster_{cluster} -o {output}
+        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Cluster_BUSCO_pairs/busco_cluster_total_pairs -o {output}
         """
 
 """
@@ -156,14 +156,4 @@ rule get_medians:
     shell:
         """
         python3 {pathScripts}4_seaview_analysis/python/median_dnds.py -i {input} -o {output}
-        """
-
-rule summarize:
-    input:
-        expand(pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS", pair = PAIRS)
-    output:
-        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
-    shell:
-        """
-        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/Per_BUSCO_Alignments/*/full_alignment.dNdS > {output}
         """

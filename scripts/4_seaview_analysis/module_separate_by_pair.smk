@@ -27,9 +27,15 @@ with open(pathResources + "filtered_organisms_data") as reader:
 
 FINAL = ACCESSNB
 
+"""
 def get_clades(wildcards):
     clades = [Path(x).stem for x in glob.glob(pathResults + f"Clades/*/")]
     return expand(pathResults + "Clades/{clade}/cluster_pairs", clade=clades)
+"""
+
+def get_clades(wildcards):
+    clades = [Path(x).stem for x in glob.glob(pathResults + f"Clades/*/")]
+    return expand(pathResults + "Clades/{clade}/clustered_species", clade=clades)
 
 rule all:
     input:
@@ -48,21 +54,25 @@ rule separate_clusters_by_clade:
 
 rule create_pair_list:
     input:
-        clust = pathResults + "Clades/{clade}/clustered_species",
+        clust = get_clades,
         busco = pathBUSCO + "busco_full.fa"
     output:
-        pathResults + "Cluster_BUSCO_pairs/busco_cluster_{cluster}"
+        touch(temp("pair_lists_done.flag"))
     shell:
         """
-        python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -b {input.busco} -c {input.clust} -o {pathResults}Cluster_BUSCO_pairs/
+        elt=' ' read -a array <<< "{input.clust}";
+        for clust in ${{array[@]}};
+        do
+            python3 {pathScripts}4_seaview_analysis/python/create_pairs.py -b {input.busco} -c ${{clust}} -o {pathResults}Cluster_BUSCO_pairs/
+        done
         """
 
 rule full_list:
     input:
-        get_clades
+        "pair_lists_done.flag"
     output:
         pathResults + "full_list"
     shell:
         """
-        cat {pathResults}Clades/*/cluster_pairs > {pathResults}full_list
+        cat {pathResults}Cluster_BUSCO_pairs/pairs_cluster_* > {pathResults}full_list
         """

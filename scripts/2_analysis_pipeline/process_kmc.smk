@@ -44,12 +44,12 @@ rule all:
     input:
         expand(pathMinhash + "kmc_{accession}.minhash.jac", accession=FINAL)
     
-"""
+
 rule get_fna:
-    ""
+    """
     Get the fna file as tempory file
     Disk space usage: 1500MB
-    ""
+    """
     input:
         url_fna = pathAssemblies + "{accession}/url_genomic.fna.txt"
     output:
@@ -58,10 +58,10 @@ rule get_fna:
         disk_mb = 1500
     priority: 1
     shell:
-        ""
+        """
         wget -q -i {pathAssemblies}{wildcards.accession}/url_genomic.fna.txt -O {pathAssemblies}{wildcards.accession}/genomic.fna.gz
-        ""
-"""
+        """
+
 
 rule process_kmc:
     """
@@ -69,7 +69,7 @@ rule process_kmc:
     Disk space usage: 15000MB + 1500MB(fasta file) = 16500MB
     """
     input:
-        fna = pathBank + "{accession}/genomic.fna.gz"
+        fna = pathAssemblies + "{accession}/genomic.fna.gz"
     output:
         kmc_pre = temp(pathKMC + "{accession}/kmc_{accession}.kmc_pre"),
         kmc_suf = temp(pathKMC + "{accession}/kmc_{accession}.kmc_suf")
@@ -137,7 +137,7 @@ rule sketch:
     priority: 5
     shell:
         """
-         ~/MIKE/src/mike sketch -t 1 -l {input.filelist} -d data/minhash
+         mike sketch -t 1 -l {input.filelist} -d data/minhash
         """
 
 ########### MOVED TO PROCESS_DISTANCE_MATRIX ################

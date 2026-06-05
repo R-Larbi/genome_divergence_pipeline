@@ -2,10 +2,6 @@ import json
 import glob
 
 configfile: "scripts/4_seaview_analysis/config.json"
-cluster  = str(config["cluster"])
-part     = config["partition"]
-max_part = config["max_part"]
-
 
 # Function to load JSON files
 def load_json(file_path):
@@ -33,26 +29,12 @@ with open(pathResources + "filtered_organisms_data") as reader:
 
 FINAL = ACCESSNB
 
-with open(pathResults + "Cluster_BUSCO_pairs/pairs_cluster_" + cluster, "r") as reader:
+with open(pathResults + "Cluster_BUSCO_pairs/bird_pair_list", "r") as reader:
     """
     Creates the batch of pairs to pass through seaview
     """
     l = reader.readlines()
-
-    # Getting the range to extract
-    fract = float(len(l) / max_part)
-
-    # We reduce the start by one to account for arrays starting from 0
-    start = (float(part) - 1.) * float(fract)
-    end   = start + fract
-
-    # We round up the start and end
-    start = int(start)
-
-    # Sometimes the end float for the last partition has a 0.999... decimal instead of being a whole.
-    end   = int(end) + (end % 1 > 0.999)
-    
-    part_pairs = l[start:end]
+    part_pairs = l
 
 
 PAIRS = []
@@ -62,7 +44,7 @@ for line in part_pairs:
 
 rule all:
     input:
-        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
+        expand(pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS", pair = PAIRS)
 
 rule separate_by_pair:
     """
@@ -75,7 +57,7 @@ rule separate_by_pair:
     shell:
         """
         mkdir -p {pathResults}seaview_alignment/Per_BUSCO_Alignments/{wildcards.pair}
-        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Cluster_BUSCO_pairs/busco_cluster_{cluster} -o {output}
+        python3 {pathScripts}4_seaview_analysis/python/separate_by_pair.py -p {wildcards.pair} -b {pathResults}Cluster_BUSCO_pairs/busco_cluster_total_pairs -o {output}
         """
 
 """
@@ -156,14 +138,4 @@ rule get_medians:
     shell:
         """
         python3 {pathScripts}4_seaview_analysis/python/median_dnds.py -i {input} -o {output}
-        """
-
-rule summarize:
-    input:
-        expand(pathResults + "seaview_alignment/Per_BUSCO_Alignments/{pair}/full_alignment.dNdS", pair = PAIRS)
-    output:
-        pathResults + "seaview_alignment/Alignment_Results/cluster_" + cluster + "_full_alignment_summary.dNdS"
-    shell:
-        """
-        awk 'FNR==1 && NR!=1 {{ next }} {{ print }}' {pathResults}seaview_alignment/Per_BUSCO_Alignments/*/full_alignment.dNdS > {output}
         """

@@ -38,9 +38,9 @@ echo ""
 echo "##################################"
 echo $num $buf
 
-csh $path_script $buf $BLASTDB $genetic_code_1 $genetic_code_2 "$pairing"_tmp_KaKs
-cat "$pairing"_tmp_KaKs >> $outfile
-\rm "$pairing"_tmp_KaKs
+csh $path_script $buf $BLASTDB $genetic_code_1 $genetic_code_2 /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs
+cat /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs >> $outfile
+\rm /tmp/rl_seaview_tmp/"$pairing"_tmp_KaKs
 
 end
 
