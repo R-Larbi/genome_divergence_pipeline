@@ -68,17 +68,25 @@ rule concatenate_gffs_genomic:
         gff = pathBUSCO + "genomic/{accession}/single_copy_busco_sequences.gff"
     shell:
         """
-        if ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff; then
+        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' > /dev/null; then
             find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; > {output}
         fi
-        if ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff; then
+        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' > /dev/null; then
             find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; >> {output}
             for p in $(ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff);
             do
                 echo $(basename $p) >> {pathBUSCO}genomic/{wildcards.accession}/multi_copy_buscos
             done
         fi
-        rm {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi
+        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' > /dev/null || compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' > /dev/null; then
+            echo "GFFs concatenated."
+        else
+            echo "No BUSCO found for {wildcards.accession}"
+            touch {output}
+        fi
+        if compgen -g '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi' > /dev/null; then
+            rm {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi
+        fi
         """
 
 rule busco_extract_genomic:
@@ -95,7 +103,11 @@ rule busco_extract_genomic:
         """
         mkdir -p {pathBUSCO}extracted_buscos/
         python3 scripts/3_cds_extraction/python/extract_genomic_cds.py -f {input.fna} -g {input.gff} -o {pathBUSCO}extracted_buscos -a {wildcards.accession}
-        cat {pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta > {pathBUSCO}extracted_buscos/{wildcards.accession}_all_buscos.fa
+        if compgen -G '{pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta' > /dev/null; then
+            cat {pathBUSCO}extracted_buscos/{wildcards.accession}_*.fasta > {output}
+        else
+            touch {output}
+        fi
         """
 
 """
