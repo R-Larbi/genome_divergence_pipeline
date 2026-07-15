@@ -134,6 +134,8 @@ Therefore, replace "clade" in the following scripts with any of the taxonomic le
 
 The scripts also require a file called "list_species_to_process" in the results folder, containing a list of all accession numbers of species you want to compute the dS for. If you're working with all species in your initial query, you may simply extract the accession numbers from data/resources/organisms_data.
 
+Finally, step 7 requires a path to the Seaview executable in the script Aln_dNdS.csh. This path must be changed to your own path.
+
 ### Step 6 - Creating list of pairs
 
 This step is not very costly.
