@@ -10,13 +10,9 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-part = str(config["partition"])
-
 rule all:
-    params:
-        p = config["partition"]
     input:
-        pathResources + part + "_organisms_data"
+        pathResources + "organisms_data"
 
 rule ncbi_query:
     output:
@@ -64,19 +60,3 @@ rule data_analysis:
         pathResources + "organisms_data"
     shell:
         "python3 {pathScripts}1_fetch_data/python/xml_reader.py {input} {output}"
-
-rule partitioning:
-    """
-    Only keeping nth tenth of the data.
-    """
-    input:
-        pathResources + "organisms_data"
-    output:
-        pathResources + part + "_organisms_data"
-    params:
-        part = config["partition"],
-        max_part = config["max_part"]
-    shell:
-        """
-        python3 {pathScripts}1_fetch_data/python/partition_organisms_data.py -i {input} -p {params.part} -m {params.max_part} -o {output}
-        """

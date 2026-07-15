@@ -10,10 +10,9 @@ def load_json(file_path):
 # Assign environment variables
 globals().update(load_json("scripts/environment_path.json"))
 
-part = str(config["partition"])
 temp_path = "/home/larbi/virtual_machine_assemblies/assemblies/"
 
-with open(pathResources + part + "_organisms_data") as reader:
+with open(pathResources + "organisms_data") as reader:
     """
     Creates the list of URL that will be used for download
     """
@@ -47,7 +46,7 @@ rule download_protein_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        pathResources + "organisms_data"
     output:
         pathAssemblies + "{accession}/url_protein.faa.txt"
     shell:
@@ -59,7 +58,7 @@ rule download_genomic_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        pathResources + "organisms_data"
     output:
         pathAssemblies + "{accession}/url_genomic.fna.txt"
     shell:
@@ -71,7 +70,7 @@ rule download_annotation_data:
     params:
         http_path = GetPath
     input:
-        pathResources + part + "_organisms_data"
+        pathResources + "organisms_data"
     output:
         pathAssemblies + "{accession}/url_genomic.gff.txt"
     shell:

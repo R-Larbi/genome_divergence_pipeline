@@ -5,9 +5,10 @@
 ```
 python 3.12.3
 Snakemake 9.16.2
-KMC 3.2.4
-MIKE 1.0
 BUSCO 6.0.0
+Miniprot 0.18-r281
+HMMER 3.4
+Entrez E-Utilities
 Seaview 5.1
 silixx 1.2.10
 R 4.4.3
@@ -22,18 +23,13 @@ pandas 3.0.0
 ### R packages
 
 ```
-stringr 1.6.0
+phytools 2.5-2
+maps 3.4.3
+ape 5.8.1
+
 ```
 
 Note that you must also install all required dependencies from those.
-
-KMC and MIKE are compiled from their git repositories:
-
-https://github.com/refresh-bio/KMC
-
-https://github.com/Argonum-Clever2/mike
-
-Their command line executables **must** be located in either **~/bin** or **~/.local/bin.**, or added to your PATH.
 
 Silixx is an available version of silix on the cluster.
 
@@ -44,13 +40,17 @@ uv init
 uv add snakemake
 ```
 
-Argument -c or --jobs is for number of threads, increase as wanted. In newer versions of snakemake, you might need to use --jobs instead. The recommended number of threads is 2. Do note that some tools will require at least 12GB of memory *per thread*. That number can be modified in scripts/2_analysis_pipeline/config.json if you cannot afford that much memory, or if you can afford more.
+Argument -c or --jobs is for number of threads, increase as wanted. In newer versions of snakemake, you might need to use --jobs instead. The recommended number of threads is any power of 2.
 
-Argument -n is for dry-run, remove for actual run. Use --quiet if you expect the run to show too much information and you just want to see the results (especially useful when working with all of eukaryota). When working on the cluster, it's best not to use --quiet as slurm will output everything as a log file for better tracking.
+Argument -n is for dry-run, remove for actual run. Note that a dry run will not show the exact number of jobs to run for some scripts, due to the use of checkpoints. Use --quiet if you expect the run to show too much information and you just want to see the results (especially useful when working with all of eukaryota). When working on the cluster, it's best not to use --quiet as slurm will output everything as a log file for better tracking.
+
+Argument --rerun-incomplete is recommended to add to all runs, so that Snakemake will automatically rerun all interrupted steps in case of a sudden cancel.
+
+For some steps, argument --no-lock is recommended, as they are intended to be run multiple times at once, and Snakemake may attempt to lock the folders to prevent this, thus failing the jobs.
 
 **Important:** Because we work with a large dataset, and running some of the tools requires a lot of memory, the script is adapted to work on multiple computers at once.
-As such, for each snakemake run up to Step 3 *included*, you **must** either use the "--config max_part={number}" argument *or* set max_part={number} in scripts/1_fetch_data/config.json, and you **must** use --config partition={a number from 1 to max_part}.
-The script partitions the data into {max_part} equal parts to work on each individually. You must run each partition, so in total on {max_part} machines (you may set max_part=1 if you have the resources required).
+As such, for some snakemake scripts in step 2 and 3, you **must** either use the "--config max_part={number}" argument *or* set max_part={number} in the config file of the given step, and you **must** use --config partition={a number from 1 to max_part}. To use both at the same time, use --config partition={x} max_part={y}.
+The script partitions the data into {max_part} equal parts and works on part number {partition}. You must run each partition, so in total on {max_part} machines (you may set max_part=1 if you have the resources required).
 
 The scripts should be executed from working directory /your/path/to/genome_divergence_pipeline/
 
@@ -58,11 +58,11 @@ Four config files are to be modified for this pipeline to work:
 
 scripts/environment_path.json contains the paths to various folders of this pipeline. **Make sure the strings end with a slash (/)** to avoid errors.
 
-scripts/1_fetch_data/config.json defines the query to NCBI, as well as the total number of partitions and the current partition. For the latter, prefer using --config partition={number} in the snakemake command line.
+scripts/1_fetch_data/config.json defines the query to NCBI.
 
-scripts/2_analysis_pipeline/config.json contains 4 variables. k is the length of kmers for the kmer count step. Recommended value is 21: any lower is too inaccurate. min_count and max_count are used in the KMC command line (refer to KMC documentation); min_count must remain 1, but you may adjust max_count (recommended is 5). mem is the amount of memory used in GB by the process, 12 is base.
+scripts/2_cds_extraction/config.json contains only the partition number and maximum number of partitions, as mentioned above.
 
-scripts/4_seaview_analysis/config.json contains one variable, corresponding to the distance threshold under which two species should be considered of a same cluster.
+scripts/3_ds_computation/config.json contains the partition number, the maximum number of partitions, and a threshold value for each taxonomic level between Genus and Phylum. Default values are 0.1, 0.2, 0.3, 0.5, 0.5.
 
 ## Script folder 1 - Data fetch
 
@@ -75,7 +75,7 @@ This step takes in an NCBI query from the config file and gathers data from all 
 Note: very large queries may fail as there isn't enough space in the command line. To run on all of Eukaryota, please use the query 'Eukaryota'.
 
 ```bash
-uv run snakemake --jobs 2 -n --config partition=1 -s scripts/1_fetch_data/fetch_data.smk
+uv run snakemake --jobs {k} -n --config partition=1 -s scripts/1_fetch_data/fetch_data.smk
 ```
 
 ### Step 2 - Getting genomic data download links
@@ -85,97 +85,85 @@ This step is not very costly.
 This step gets the download links of each species' genomic data, as well as protein and annotation data if available.
 
 ```bash
-uv run snakemake --jobs 2 -n --config partition=1 -s scripts/1_fetch_data/data_dl.smk
+uv run snakemake --jobs {k} -n --config partition=1 -s scripts/1_fetch_data/data_dl.smk
 ```
 
-## Script folder 2 - Distance matrix generation
+## Script folder 2 - CDS extraction
 
-### Step 3 - KMC process
-
-This step runs a kmer count algorithm on all genomes and returns hash files used later on for matrix generation.
-
-```bash
-uv run snakemake --jobs 2 -n --config partition=1 -s scripts/2_analysis_pipeline/process_kmc.smk
-```
-
-### Step 4 - Clade infering
-
-**Only** run this once you have run step 3 on all partitions.
-
-This step is not very costly.
-
-This step takes all hash files and a taxonomy dataset, and infers all clades that the species will be filtered into.
-
-A species will be filtered in the largest clade of which there are less than 1000 members in the query.
-
-```bash
-uv run snakemake -n -s scripts/2_analysis_pipeline/module_get_clade.smk
-```
-
-### Step 5 - Distance matrix calculation
-
-This step takes all hash file lists for each clade, and runs a distance matrix algorithm on each clade.
-
-```bash
-uv run snakemake --jobs 2 -n -s scripts/2_analysis_pipeline/process_distance_matrix.smk
-```
-
-## Script folder 3 - CDS extraction
-
-### Step 6 - Separation of curated and uncurated data
+### Step 3 - Separation of curated and uncurated data
 
 This step is not very costly.
 
 This step prepares the folders so as to separate unannotated and annotated data for BUSCO execution.
 
 ```bash
-uv run snakemake -n -s scripts/3_cds_extraction/separate_curated_uncurated.smk
+uv run snakemake -n -s scripts/2_cds_extraction/separate_curated_uncurated.smk
 ```
 
-### Step 7a - Extraction of CDS of BUSCO genes from unannotated data
+### Step 4a - Extraction of CDS of BUSCO genes from unannotated data
 
 This step runs BUSCO on all unnanotated genomes, and extracts the CDS of BUSCO genes for each species using BUSCO's generated GFFs.
 
 ```bash
-uv run snakemake --jobs 2 -n -s scripts/3_cds_extraction/module_busco_extraction_genome.smk
+uv run snakemake --jobs {k} -n -s scripts/2_cds_extraction/module_busco_extraction_genome.smk
 ```
 
-### Step 7b - Extraction of CDS of BUSCO genes from annotated data
+### Step 4b - Extraction of CDS of BUSCO genes from annotated data
 
 This step runs BUSCO on all annotated genomes, and extracts the CDS of BUSCO genes for each species using protein IDs and GFFs.
 
 ```bash
-uv run snakemake --jobs 2 -n -s scripts/3_cds_extraction/module_busco_extraction_protein.smk
+uv run snakemake --jobs {k} -n -s scripts/2_cds_extraction/module_busco_extraction_protein.smk
 ```
 
-### Step 8 - Concatenation of BUSCO data
+### Step 5 - Concatenation of BUSCO data
 
 This step is not very costly.
 
 This step concatenates all extracted CDS into a single file, used for the Seaview analysis.
 
 ```bash
-uv run snakemake -n -s scripts/3_cds_extraction/process_cds_extraction.smk
+uv run snakemake -n -s scripts/2_cds_extraction/process_cds_extraction.smk
 ```
 
-## Script folder 4 - Seaview analysis
+## Script folder 3 - Seaview analysis and dS computation per taxonomic level
 
-### Step 9 - Clustering of close species
+For this folder, a set of three scripts must be run for each taxonomic level from Genus to Class, with Phylum also being possible but not necessary.
+
+Therefore, replace "clade" in the following scripts with any of the taxonomic levels between Genus, Family, Order, Class and Phylum. They must be run in that order (i.e. you must have run all scripts for Genus before running Family.)
+
+The scripts also require a file called "list_species_to_process" in the results folder, containing a list of all accession numbers of species you want to compute the dS for. If you're working with all species in your initial query, you may simply extract the accession numbers from data/resources/organisms_data.
+
+### Step 6 - Creating list of pairs
 
 This step is not very costly.
 
-This step takes in the distance matrix of each clade, and returns a clustering of species in each clade, formatted into pairings of species.
+This step takes in the taxonomy file and concatenated BUSCO CDS data, and returns a list of pairs to align against one another. In the case of Genus, it also generates the BLAST database for those BUSCO genes.
 
 ```bash
-uv run snakemake -n -s scripts/4_seaview_analysis/process_clustering.smk
+uv run snakemake -n -s scripts/3_ds_computation/process_{clade}_pair_list.smk
 ```
 
-### Final step - Seaview analysis
+### Step 7 - Seaview analysis and dS computation
 
 This step takes in the BUSCO CDS data and the pairings, and returns an alignment analysis performed by Seaview.
 
+Because of the potential number of pairs, Snakemake may take a lot of time to generate the DAG of jobs for this scripts. Therefore, heavy partitioning is advised.
+
+The argument --nolock is used because Snakemake will often attempt to lock the folder when multiple partitions are run at once, thus failing the jobs.
+
 ```bash
-uv run snakemake -n -s scripts/4_seaview_analysis/process_seaview.smk
+uv run snakemake --jobs {k} -n -s scripts/3_ds_computation/process_{clade}_ds_calculation.smk --config partition={x} max_part={y} --nolock
+```
+
+### Step 8 - Cluster species on dS and find representative species
+
+This step takes in the computed dS of all alignments at the current taxonomic level, and returns clusters of closely-related species based on a dS threshold, as well as a representative species for each cluster.
+
+Make sure to specify the max_part config parameter, as it is used to concatenate all partitioned results of the previous script.
+
+```bash
+uv run snakemake --jobs {k} -n -s scripts/3_ds_computation/process_{clade}_get_representatives.smk --config max_part={y}
 ```
 
 ## Folder hierarchy:
@@ -186,7 +174,7 @@ Names between [] are temporary and deleted during process.
 .
 +-- busco_downloads                          # BUSCO data for eukaryota 
 +-- data
-|   +-- assemblies
+|   +-- assemblies                           # Note: Data currently downloaded on a bank instead
 |   |   +== {accession}
 |   |       +-- [genomic.fna]                # Genomic fasta file
 |   |       +-- [genomic.gff]                # Annotation file (only if annotated)
@@ -195,17 +183,9 @@ Names between [] are temporary and deleted during process.
 |   +-- resources
 |       +-- [rooted_extraction]
 |       +-- organisms_data                    # Full data of organisms
-|       +== {partition}_organisms_data        # Partitioned data for processing on multiple machines
-|       +-- filtered_organisms_data           # Filtered data with all unclustered organisms removed
 |       +-- ncbi_eukaryota_dataset.taxonomy   # Taxonomy file for eukaryota
+|       +-- nodes.dmp                         # Genetic code file
 +-- results
-|   +== Clades/{clade}
-|   |   +-- dist.txt                          # Distance matrix
-|   |   +-- hr_dist.txt                       # Human-readable distance matrix
-|   |   +-- pair_list                         # List of paired organisms for alignment based on clusters
-|   |   +-- [species_pair]                    # Possible pairs in clade based on threshold
-|   |   +-- [clustered_species]               # Species with associated cluster
-|   +-- [KMC]
 |   +-- BUSCO
 |   |   +-- extracted_buscos
 |   |   |   +== {accession}-{busco id}.fasta  # Sequence for busco {busco id} and species {accession}
@@ -215,67 +195,92 @@ Names between [] are temporary and deleted during process.
 |   |   |           +-- busco_sequences
 |   |   |           |   +-- single_copy_busco_sequences
 |   |   |           |       +== {busco id}.gff # Busco annotation data
+|   |   |           |   +-- multi_copy_busco_sequences
+|   |   |           |       +== {busco id}.gff # Busco annotation data
 |   |   |           +-- full_table.tsv         # Data table
 |   |   +-- protein
 |   |   |   +== {accession}
 |   |   |       +-- run_eukaryota_odb12
 |   |   |           +-- full_table.tsv         # Data table
 |   |   +-- busco_full.fa                      # All combined buscos in single file
-|   +-- minhash
-|   |   +-- hashlists
-|   |   |   +== Clades/{clade}_hashlist.txt           # List of all hash files for matrix generation
-|   |   +== kmc_{accession}.minhash.jac        # Hash files for matrix generation
+|   +-- {clade}_Clustering
+|   |   +== cluster_{x}_matrix.txt
+|   |   +== cluster_{x}_representative_species
+|   +-- seaview_alignment
+|   |   +-- Alignment_Summaries
+|   |   |   +== {clade}_level_{x}-{y}_full_alignment.dNdS
+|   |   |   +== {clade}_level_full_alignment.dNdS
+|   |   +-- Per_BUSCO_Alignments
+|   |       +== {accession_1}-{accession_2}
+|   |           +-- busco_pairs
+|   |           +-- full_alignment.dNdS
+|   |           +-- per_busco_alignment.dNdS
+|   +== busco_pairs_{clade}
+|   +== {clade}_close_species_pairs
+|   +== {clade}_clustered_species
+|   +== {clade}_full_representative_species
+|   +== {clade}_list_processed_species
+|   +== full_species_list
+|   +== list_orphans_{clade}
+|   +== list_pairs_{clade}
+|   +== list_species_to_process
+|   +== list_species_with_no_buscos
 |   +-- total_pair_list
-|   +-- full_alignment.KaKs
 +-- scripts
 |   +-- 1_fetch_data
 |   |   +-- python
-|   |   |   +-- partition_organisms_data.py
 |   |   |   +-- xml_reader.py
 |   |   |   +-- xml_rewrite.py
 |   |   +-- config.json                         # Defines query, number of partitions and max partition
 |   |   +-- data_dl.smk                         # Script 2
 |   |   +-- fetch_data.smk                      # Script 1
-|   +-- 2_analysis_pipeline
-|   |   +-- python
-|   |   |   +-- get_clade.py
-|   |   |   +-- hr_dist.py
-|   |   |   +-- write_filelist.py
-|   |   |   +-- write_hashlist.py
-|   |   +-- Rscript
-|   |   |   +-- get_clusters.R
-|   |   +-- config.json                          # Defines kmer count variables and memory usage
-|   |   +-- module_get_clade.smk                 # Script 4
-|   |   +-- process_distance_matrix.smk          # Script 5
-|   |   +-- process_kmc.smk                      # Script 3
-|   +-- 3_cds_extraction
+|   +-- 2_cds_extraction
 |   |   +-- python
 |   |   |   +-- extract_genomic_cds.py
 |   |   |   +-- extract_protein_cds.py
 |   |   |   +-- extract_sequences_protein.py
 |   |   |   +-- filter_isoforms.py
-|   |   +-- module_busco_extraction_genome.smk
-|   |   +-- module_busco_extraction_protein.smk
+|   |   +-- module_busco_extraction_genome.smk  # Script 4a
+|   |   +-- module_busco_extraction_protein.smk # Script 4b
 |   |   +-- module_get_faa.smk
 |   |   +-- module_get_fna.smk
 |   |   +-- module_get_gff.smk
-|   |   +-- process_cds_extraction.smk
-|   |   +-- separate_curated_uncurated.smk
-|   +-- 4_seaview_analysis
+|   |   +-- process_cds_extraction.smk          # Script 5
+|   |   +-- separate_curated_uncurated.smk      # Script 3
+|   +-- 3_ds_computation
 |   |   +-- python
 |   |   |   +-- cluster_species.py
-|   |   |   +-- create_pairs.py
+|   |   |   +-- create_busco_pairs.py
+|   |   |   +-- filter_clusters.py
+|   |   |   +-- filter_pairs.py
+|   |   |   +-- generate_matrix.py
+|   |   |   +-- generate_pairs.py
+|   |   |   +-- median_dn_ds.py
+|   |   |   +-- separate_by_pair.py
 |   |   +-- config.json
-|   |   +-- process_clustering.smk
-|   |   +-- process_seaview.smk
+|   |   +-- process_class_ds_calculation.smk           # Script 7 Class
+|   |   +-- process_class_get_representatives.smk      # Script 8 Class
+|   |   +-- process_class_pair_list.smk                # Script 6 Class
+|   |   +-- process_family_ds_calculation.smk          # Script 7 Family
+|   |   +-- process_family_get_representatives.smk     # Script 8 Family
+|   |   +-- process_family_pair_list.smk               # Script 6 Family
+|   |   +-- process_genus_ds_calculation.smk           # Script 7 Genus
+|   |   +-- process_genus_get_representatives.smk      # Script 8 Genus
+|   |   +-- process_genus_pair_list.smk                # Script 6 Genus
+|   |   +-- process_order_ds_calculation.smk           # Script 7 Order
+|   |   +-- process_order_get_representatives.smk      # Script 8 Order
+|   |   +-- process_order_pair_list.smk                # Script 6 Order
+|   |   +-- process_phylum_ds_calculation.smk          # Script 7 Phylum
+|   |   +-- process_phylum_get_representatives.smk     # Script 8 Phylum
+|   |   +-- process_phylum_pair_list.smk               # Script 6 Phylum
 |   +-- environment_path.json
 +-- README.md
 ```
 
-The data folder contains all data for the analysis, most of which is held temporarily and deleted at the earliest convenience to save disk space.
+The data folder contains all data for the analysis. **Note that the nodes.dmp file does not come in the repository, as it is too large, you must get it from the "taxdump" files of NCBI.** You may need to regenerate a new taxonomy file when adding new species to the dataset: make sure to respect naming and formatting, so as to not cause any issues with the scripts.
 
 The scripts folder contains all of the scripts used by the pipeline, as well as config files.
 
-The results folder contains the distance matrix and its human readable version, as well as the dNdS analysis from Seaview.
+The results folder contains all generated files, including all BUSCO gene CDS, all Seaview-computed dN, dS and dN/dS, and lists of pairs and clusters for each taxonomic level.
 
 The busco_downloads folder contains the BUSCO eukaryota dataset.
