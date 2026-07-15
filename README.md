@@ -40,7 +40,7 @@ uv init
 uv add snakemake
 ```
 
-Argument -c or --jobs is for number of threads, increase as wanted. In newer versions of snakemake, you might need to use --jobs instead. The recommended number of threads is any power of 2.
+Argument -c or --jobs is for number of threads, increase as wanted. In newer versions of Snakemake, or on the cluster, you might need to use --jobs instead. The recommended number of threads is any power of 2.
 
 Argument -n is for dry-run, remove for actual run. Note that a dry run will not show the exact number of jobs to run for some scripts, due to the use of checkpoints. Use --quiet if you expect the run to show too much information and you just want to see the results (especially useful when working with all of eukaryota). When working on the cluster, it's best not to use --quiet as slurm will output everything as a log file for better tracking.
 
