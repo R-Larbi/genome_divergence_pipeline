@@ -1,0 +1,9 @@
+{
+    "partition": 1,
+    "max_part": 1,
+    "genus_threshold": 0.1,
+    "family_threshold": 0.2,
+    "order_threshold": 0.3,
+    "class_threshold": 0.5,
+    "phylum_threshold": 0.5
+}
