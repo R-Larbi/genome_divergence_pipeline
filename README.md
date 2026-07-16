@@ -103,8 +103,10 @@ uv run snakemake -n -s scripts/2_cds_extraction/separate_curated_uncurated.smk
 
 This step runs BUSCO on all unnanotated genomes, and extracts the CDS of BUSCO genes for each species using BUSCO's generated GFFs.
 
+Due to the large number of species and the lengthy runtime, it is advised to partition this step. Also note this step uses a lot of memory.
+
 ```bash
-uv run snakemake --jobs {k} -n -s scripts/2_cds_extraction/module_busco_extraction_genome.smk
+uv run snakemake --jobs {k} -n -s scripts/2_cds_extraction/module_busco_extraction_genome.smk --config partition={x} max_part={y}
 ```
 
 ### Step 4b - Extraction of CDS of BUSCO genes from annotated data
@@ -133,7 +135,7 @@ Therefore, replace "clade" in the following scripts with any of the taxonomic le
 
 The scripts also require a file called "list_species_to_process" in the results folder, containing a list of all accession numbers of species you want to compute the dS for. If you're working with all species in your initial query, you may simply extract the accession numbers from data/resources/organisms_data.
 
-Finally, step 7 requires a path to the Seaview executable in the script Aln_dNdS.csh. This path must be changed to your own path.
+Finally, step 7 requires a path to the Seaview executable in the script scripts/3_ds_computation/csh/Aln_dNdS.csh. This path must be changed to your own path to Seaview.
 
 ### Step 6 - Creating list of pairs
 
@@ -285,3 +287,7 @@ The scripts folder contains all of the scripts used by the pipeline, as well as 
 The results folder contains all generated files, including all BUSCO gene CDS, all Seaview-computed dN, dS and dN/dS, and lists of pairs and clusters for each taxonomic level.
 
 The busco_downloads folder contains the BUSCO eukaryota dataset.
+
+### Known issue
+
+Updating busco_full.fa may cause Snakemake to want to run all pairs again for the final step. To prevent this, either touch busco_full.fa to give it an earlier date of creation, or modify all versions of script 7 (ds_calculation) to remove the dependency on busco_full.fa.
