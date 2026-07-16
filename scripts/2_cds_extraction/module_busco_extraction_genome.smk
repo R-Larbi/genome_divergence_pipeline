@@ -91,29 +91,29 @@ rule concatenate_gffs_genomic:
         gff = pathBUSCO + "genomic/{accession}/single_copy_busco_sequences.gff"
     shell:
         """
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' > /dev/null; then
+        if [ $(ls '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' 2> /dev/null |wc -l) -gt 0 ]; then
             find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; > {output}
         fi
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' > /dev/null; then
+        if [ $(ls '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' 2> /dev/null |wc -l) -gt 0; then
             find {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff -type f -print -exec cat {{}} \; >> {output}
             for p in $(ls {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff);
             do
                 echo $(basename $p) >> {pathBUSCO}genomic/{wildcards.accession}/multi_copy_buscos
             done
         fi
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' > /dev/null || compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' > /dev/null; then
+        if [ $(ls '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/single_copy_busco_sequences/*.gff' 2> /dev/null) -gt 0 ] || [ $(ls '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/busco_sequences/multi_copy_busco_sequences/*.gff' 2> /dev/null) -gt 0 ]; then
             echo "GFFs concatenated."
         else
             echo "No BUSCO found for {wildcards.accession}"
             touch {output}
         fi
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi' > /dev/null; then
+        if [ -f '{pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi' ]; then
             rm {pathBUSCO}genomic/{wildcards.accession}/run_eukaryota_odb12/miniprot_output/ref.mpi
         fi
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/logs/miniprot_align_eukaryota_odb12_out.log' > /dev/null; then
+        if [ -f '{pathBUSCO}genomic/{wildcards.accession}/logs/miniprot_align_eukaryota_odb12_out.log' ]; then
             rm {pathBUSCO}genomic/{wildcards.accession}/logs/miniprot_align_eukaryota_odb12_out.log
         fi
-        if compgen -G '{pathBUSCO}genomic/{wildcards.accession}/tmp/' > /dev/null; then
+        if [ -d '{pathBUSCO}genomic/{wildcards.accession}/tmp/' ]; then
             rm -r {pathBUSCO}genomic/{wildcards.accession}/tmp/
         fi
         """

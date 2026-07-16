@@ -38,5 +38,5 @@ rule create_pair_list_family:
         pathResults + "busco_pairs_family"
     shell:
         """
-        python3 {pathScripts}3_ds_computation/python/create_pairs.py -i {input.pairs} -b {input.busco} -o {pathResults}busco_pairs_family
+        python3 {pathScripts}3_ds_computation/python/create_busco_pairs.py -i {input.pairs} -b {input.busco} -o {pathResults}busco_pairs_family
         """

@@ -26,7 +26,6 @@ pandas 3.0.0
 phytools 2.5-2
 maps 3.4.3
 ape 5.8.1
-
 ```
 
 Note that you must also install all required dependencies from those.
@@ -174,81 +173,81 @@ Names between [] are temporary and deleted during process.
 
 ```
 .
-+-- busco_downloads                          # BUSCO data for eukaryota 
++-- busco_downloads                                         # BUSCO data for eukaryota 
 +-- data
-|   +-- assemblies                           # Note: Data currently downloaded on a bank instead
+|   +-- assemblies                                          # Note: Data currently downloaded on a bank instead
 |   |   +== {accession}
-|   |       +-- [genomic.fna]                # Genomic fasta file
-|   |       +-- [genomic.gff]                # Annotation file (only if annotated)
-|   |       +-- [protein.faa]                # Protein fasta file (only if annotated)
-|   |       +-- url_genomic.fna.txt          # Download links to data
+|   |       +-- [genomic.fna]                               # Genomic fasta file
+|   |       +-- [genomic.gff]                               # Annotation file (only if annotated)
+|   |       +-- [protein.faa]                               # Protein fasta file (only if annotated)
+|   |       +-- url_genomic.fna.txt                         # Download links to data
 |   +-- resources
 |       +-- [rooted_extraction]
-|       +-- organisms_data                    # Full data of organisms
-|       +-- ncbi_eukaryota_dataset.taxonomy   # Taxonomy file for eukaryota
-|       +-- nodes.dmp                         # Genetic code file
+|       +-- organisms_data                                  # Full data of organisms
+|       +-- ncbi_eukaryota_dataset.taxonomy                 # Taxonomy file for eukaryota
+|       +-- nodes.dmp                                       # Genetic code file
 +-- results
 |   +-- BUSCO
 |   |   +-- extracted_buscos
-|   |   |   +== {accession}-{busco id}.fasta  # Sequence for busco {busco id} and species {accession}
+|   |   |   +== {accession}-{busco id}.fasta                # Sequence for busco {busco id} and species {accession}
 |   |   +-- genome
 |   |   |   +== {accession}
 |   |   |       +-- run_eukaryota_odb12
 |   |   |           +-- busco_sequences
 |   |   |           |   +-- single_copy_busco_sequences
-|   |   |           |       +== {busco id}.gff # Busco annotation data
+|   |   |           |       +== {busco id}.gff              # Busco annotation data
 |   |   |           |   +-- multi_copy_busco_sequences
-|   |   |           |       +== {busco id}.gff # Busco annotation data
-|   |   |           +-- full_table.tsv         # Data table
+|   |   |           |       +== {busco id}.gff              # Busco annotation data
+|   |   |           +-- full_table.tsv                      # Data table
 |   |   +-- protein
 |   |   |   +== {accession}
 |   |   |       +-- run_eukaryota_odb12
-|   |   |           +-- full_table.tsv         # Data table
-|   |   +-- busco_full.fa                      # All combined buscos in single file
+|   |   |           +-- full_table.tsv                      # Data table
+|   |   +-- busco_full.fa                                   # All combined buscos in single file
 |   +-- {clade}_Clustering
-|   |   +== cluster_{x}_matrix.txt
-|   |   +== cluster_{x}_representative_species
+|   |   +== cluster_{x}_matrix.txt                          # dS matrix for step 8
+|   |   +== cluster_{x}_representative_species              # Representative species of cluster x
 |   +-- seaview_alignment
 |   |   +-- Alignment_Summaries
-|   |   |   +== {clade}_level_{x}-{y}_full_alignment.dNdS
-|   |   |   +== {clade}_level_full_alignment.dNdS
+|   |   |   +== {clade}_level_{x}-{y}_full_alignment.dNdS   # Partitioned dS for pairs in taxonomic level {clade}
+|   |   |   +== {clade}_level_full_alignment.dNdS           # Total data of dS for pairs in taxonomic level {clade}
 |   |   +-- Per_BUSCO_Alignments
 |   |       +== {accession_1}-{accession_2}
-|   |           +-- busco_pairs
-|   |           +-- full_alignment.dNdS
-|   |           +-- per_busco_alignment.dNdS
-|   +== busco_pairs_{clade}
-|   +== {clade}_close_species_pairs
-|   +== {clade}_clustered_species
-|   +== {clade}_full_representative_species
-|   +== {clade}_list_processed_species
-|   +== full_species_list
-|   +== list_orphans_{clade}
-|   +== list_pairs_{clade}
-|   +== list_species_to_process
-|   +== list_species_with_no_buscos
-|   +-- total_pair_list
+|   |           +-- busco_pairs                             # Pairs of BUSCO genes for Seaview analysis
+|   |           +-- full_alignment.dNdS                     # Summarized seaview alignment for given pair of species
+|   |           +-- per_busco_alignment.dNdS                # Seaview alignment of pair of species for each BUSCO gene
+|   +== busco_pairs_{clade}                                 # Full list of pairs of BUSCO genes to align for step 7
+|   +== {clade}_close_species_pairs                         # Pairs of species which passed the dS threshold
+|   +== {clade}_clustered_species                           # Species and their Silixx-given cluster 
+|   +== {clade}_full_representative_species                 # Representative species and orphan species for given taxonomic level
+|   +== {clade}_list_processed_species                      # List of all species which passed the threshold, for getting number of species for Silixx
+|   +-- full_species_list                                   # Species to process at Genus level
+|   +== list_orphans_{clade}                                # Species with less than two other members in their clade
+|   +== list_pairs_{clade}                                  # Pairs of species to process at {clade} level
+|   +-- list_species_to_process                             # List of species to process through the pipeline (mostly for step 4)
+|   +-- list_species_with_no_buscos                         # Species to process which end up having no BUSCO gene in the dataset
 +-- scripts
 |   +-- 1_fetch_data
 |   |   +-- python
 |   |   |   +-- xml_reader.py
 |   |   |   +-- xml_rewrite.py
-|   |   +-- config.json                         # Defines query, number of partitions and max partition
-|   |   +-- data_dl.smk                         # Script 2
-|   |   +-- fetch_data.smk                      # Script 1
+|   |   +-- config.json                                     # Defines query
+|   |   +-- data_dl.smk                                     # Script 2
+|   |   +-- fetch_data.smk                                  # Script 1
 |   +-- 2_cds_extraction
 |   |   +-- python
 |   |   |   +-- extract_genomic_cds.py
 |   |   |   +-- extract_protein_cds.py
 |   |   |   +-- extract_sequences_protein.py
 |   |   |   +-- filter_isoforms.py
-|   |   +-- module_busco_extraction_genome.smk  # Script 4a
-|   |   +-- module_busco_extraction_protein.smk # Script 4b
+|   |   +-- config.json                                     # Defines number of partitions and max partition
+|   |   +-- module_busco_extraction_genome.smk              # Script 4a
+|   |   +-- module_busco_extraction_protein.smk             # Script 4b
 |   |   +-- module_get_faa.smk
 |   |   +-- module_get_fna.smk
 |   |   +-- module_get_gff.smk
-|   |   +-- process_cds_extraction.smk          # Script 5
-|   |   +-- separate_curated_uncurated.smk      # Script 3
+|   |   +-- process_cds_extraction.smk                      # Script 5
+|   |   +-- separate_curated_uncurated.smk                  # Script 3
 |   +-- 3_ds_computation
 |   |   +-- python
 |   |   |   +-- cluster_species.py
@@ -259,22 +258,22 @@ Names between [] are temporary and deleted during process.
 |   |   |   +-- generate_pairs.py
 |   |   |   +-- median_dn_ds.py
 |   |   |   +-- separate_by_pair.py
-|   |   +-- config.json
-|   |   +-- process_class_ds_calculation.smk           # Script 7 Class
-|   |   +-- process_class_get_representatives.smk      # Script 8 Class
-|   |   +-- process_class_pair_list.smk                # Script 6 Class
-|   |   +-- process_family_ds_calculation.smk          # Script 7 Family
-|   |   +-- process_family_get_representatives.smk     # Script 8 Family
-|   |   +-- process_family_pair_list.smk               # Script 6 Family
-|   |   +-- process_genus_ds_calculation.smk           # Script 7 Genus
-|   |   +-- process_genus_get_representatives.smk      # Script 8 Genus
-|   |   +-- process_genus_pair_list.smk                # Script 6 Genus
-|   |   +-- process_order_ds_calculation.smk           # Script 7 Order
-|   |   +-- process_order_get_representatives.smk      # Script 8 Order
-|   |   +-- process_order_pair_list.smk                # Script 6 Order
-|   |   +-- process_phylum_ds_calculation.smk          # Script 7 Phylum
-|   |   +-- process_phylum_get_representatives.smk     # Script 8 Phylum
-|   |   +-- process_phylum_pair_list.smk               # Script 6 Phylum
+|   |   +-- config.json                                     # Defines number of partitions, max partition and dS thresholds
+|   |   +-- process_class_ds_calculation.smk                # Script 7 Class
+|   |   +-- process_class_get_representatives.smk           # Script 8 Class
+|   |   +-- process_class_pair_list.smk                     # Script 6 Class
+|   |   +-- process_family_ds_calculation.smk               # Script 7 Family
+|   |   +-- process_family_get_representatives.smk          # Script 8 Family
+|   |   +-- process_family_pair_list.smk                    # Script 6 Family
+|   |   +-- process_genus_ds_calculation.smk                # Script 7 Genus
+|   |   +-- process_genus_get_representatives.smk           # Script 8 Genus
+|   |   +-- process_genus_pair_list.smk                     # Script 6 Genus
+|   |   +-- process_order_ds_calculation.smk                # Script 7 Order
+|   |   +-- process_order_get_representatives.smk           # Script 8 Order
+|   |   +-- process_order_pair_list.smk                     # Script 6 Order
+|   |   +-- process_phylum_ds_calculation.smk               # Script 7 Phylum
+|   |   +-- process_phylum_get_representatives.smk          # Script 8 Phylum
+|   |   +-- process_phylum_pair_list.smk                    # Script 6 Phylum
 |   +-- environment_path.json
 +-- README.md
 ```
