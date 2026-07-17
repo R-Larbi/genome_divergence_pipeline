@@ -101,7 +101,7 @@ rule get_representatives_phylum:
         pathResults + "Phylum_Clustering/cluster_{clust}_representative_species"
     shell:
         """
-        Rscript {pathScripts}2_analysis_pipeline/Rscript/get_representatives.R {input} {output}
+        Rscript {pathScripts}3_ds_computation/R/get_representatives.R {input} {output}
         """
 
 rule concatenate_rep_phylum:
