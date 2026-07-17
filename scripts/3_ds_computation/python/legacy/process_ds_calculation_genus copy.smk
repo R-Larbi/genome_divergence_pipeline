@@ -19,7 +19,8 @@ globals().update(load_json("scripts/environment_path.json"))
 with open(pathResults + "list_species_to_process", "r") as reader:
     PROCESS = [] # List of species to process
     for line in reader.readlines():
-        PROCESS.append(line.strip())
+        line_proc = line.strip().split(".")[0]
+        PROCESS.append(line_proc)
 
 with open(pathResources + "filtered_organisms_data") as reader:
     """

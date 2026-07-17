@@ -16,7 +16,8 @@ max_part = int(config["max_part"])
 with open(pathResults + "list_species_to_process", "r") as reader:
     PROCESS = [] # List of species to process
     for line in reader.readlines():
-        PROCESS.append(line.strip())
+        line_proc = line.strip().split(".")[0]
+        PROCESS.append(line_proc)
 
 with open(pathResources + "organisms_data", "r") as reader:
     """
